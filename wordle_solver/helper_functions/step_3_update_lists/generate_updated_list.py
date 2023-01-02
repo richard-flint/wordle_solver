@@ -120,7 +120,7 @@ def get_remaining_words(all_words_remaining,all_possible_letters_remaining,rag_s
                 if actual_columns[i] not in possible_columns:
                     delete_word_flag=True
 
-        #If delete word flat is now set to true, delete word from list         
+        #If delete word flag is now set to true, delete word from list         
         if delete_word_flag==True:
             all_words_remaining_updated.remove(word)
         
