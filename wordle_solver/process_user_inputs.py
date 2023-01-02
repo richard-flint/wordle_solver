@@ -58,12 +58,28 @@ def run_wordle_solver(mode,next_word_selection):
     #Initialise dictionary for saving results if doesn't already exist
     if "n_guesses_dict" not in locals():
         n_guesses_dict=dict()
+        
+    #----------------------------------#
+    #--- Run for real wordle puzzle ---#
+    #----------------------------------#
 
+    if mode == "real":
+        
+        #Input dummy true word (as we don't know the true word for this mode)
+        true_word="unknown"
+        
+        #Find word using wordle solver
+        guess_word,n_guesses=find_word(all_words,true_word,next_word_selection,mode)
+        
+        #Output statistics
+        print("\nThe word is: ", guess_word)
+        print("Number of guesses: ",n_guesses)
+        
     #------------------------#
     #--- Run for one word ---#
     #------------------------#
 
-    if mode == "one_word":
+    elif mode == "one_word":
 
         #Start timer
         start_time = time.time()
@@ -89,7 +105,7 @@ def run_wordle_solver(mode,next_word_selection):
         wordle_results = WordleResultsOneWord(true_word,guess_word,n_guesses,time_to_solve)
 
         #Print results
-        print("The guess is: ", guess_word)
+        print("The final guess is: ", guess_word)
         print("The actual word is: ",true_word)
         print("Number of guesses: ",n_guesses)
         print("Time taken to solve: ",round(time_to_solve,5),"s")
@@ -99,9 +115,9 @@ def run_wordle_solver(mode,next_word_selection):
         
         return wordle_results
 
-    #------------------------#
-    #--- Run for all word ---#
-    #------------------------#
+    #----------------------------------#
+    #--- Run for more than one word ---#
+    #----------------------------------#
 
     #Check whether we are running shorter version (i.e. 100 words) or full version (i.e. all_words)
     elif (mode == "100_words" or mode == "all_words"):
@@ -170,4 +186,4 @@ def run_wordle_solver(mode,next_word_selection):
 
     #Catch if user has incorrectly selected the model
     else:
-        print('Error! You must select either: "one_word" or "all_words"')
+        print('Error! You must select either: "real, "one_word", "100_words" or "all_words"')

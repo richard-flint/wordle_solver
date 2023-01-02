@@ -21,7 +21,7 @@
 #---------3a: "brute force simple"
 #         In this approach, we compare the trial word against
 #         the temporary actual word, and get the usual RAG score i.e.we use the
-#         "check_letters" function that we otherwise use in step 2 of the main "find_word"
+#         "check_letters_automatically" function that we otherwise use in step 2 of the main "find_word"
 #         algorithm. This generates a RAG score for each letter, which we then map to a 
 #         numeric score based on some assumptions for the value of each colour (see "ideas
 #         for modifications/extensions" below.) The total score for thee current temporary
@@ -165,7 +165,7 @@ def brute_force_main(version,all_words_remaining,n_words_remaining,
             numeric_score=0
 
             #Generate rag score for trial word
-            rag_score=stp2.check_letters(actual_word,trial_word)
+            rag_score=stp2.check_letters_automatically(actual_word,trial_word)
 
             #*** Brute force simple ***#
 
