@@ -1,4 +1,5 @@
 #App lifted largely from tutorial here: https://blog.pythonanywhere.com/169/#step-3-make-the-processing-code-available-to-the-web-app
+#To run, navigate to the relevant folder in the terminal and use the command: python flask_app.py
 
 #Next steps:
 # - Create a version of the wordle solver that can integrate with this app.
@@ -64,7 +65,11 @@ def wordle_homepage():
         elif input_flag==0:
             
             #Ensure relevant variables are global
-            global all_words_remaining,n_words_remaining,all_possible_letters_remaining,next_word_selection
+            global all_words_remaining,n_words_remaining,all_possible_letters_remaining,next_word_selection,n_words,all_words
+            
+            #Reset global variables if re-starting
+            if n_words_remaining<n_words:
+                all_words_remaining,n_words_remaining,all_possible_letters_remaining,count=stp0.initialise_variables(all_words)
             
             #Get first trial word
             mode="real_flask"
@@ -78,7 +83,6 @@ def wordle_homepage():
                                                                                                                     all_words_remaining,
                                                                                                                     n_words_remaining,
                                                                                                                     all_possible_letters_remaining)
-            #trial_word="hello"
             
             #Return first trial word
             return '''
@@ -110,6 +114,9 @@ def wordle_solver(trial_word):
     #Initialise variables
     errors = "" #Initialise error string for printing error if needed
     accepted_colours=["Green","Orange","Red"] #Initialise list for checking input
+    
+    #Ensure relevant variables are global
+    global all_words_remaining,n_words_remaining,all_possible_letters_remaining,next_word_selection
     
     #If using post method (which we are when submitting inputs via a form)
     if request.method == "POST":
@@ -148,9 +155,6 @@ def wordle_solver(trial_word):
             #------------------------#
             #------------------------#
             
-            #Ensure relevant variables are global
-            global all_words_remaining,n_words_remaining,all_possible_letters_remaining,next_word_selection,my_count
-            
             #Get first trial word
             mode="real_flask"
             trial_word,all_words_remaining,n_words_remaining,all_possible_letters_remaining=run_wordle_solver_flask(mode,
@@ -160,14 +164,13 @@ def wordle_solver(trial_word):
                                                                                                                     all_words_remaining,
                                                                                                                     n_words_remaining,
                                                                                                                     all_possible_letters_remaining)
-            #my_count+=1
-            #trial_word="hello "+str(my_count)
             
     return '''
         <html>
             <body>
                 {errors}
                 <p>The next guess is: {trial_word}</p>
+                <p>The number of possible words is: {n_words_remaining}</p>
                 <p>Enter your colours:</p>
                 <form method="post" action="/{trial_word}">
                     <p><input name="colour1input" /></p>
@@ -177,9 +180,12 @@ def wordle_solver(trial_word):
                     <p><input name="colour5input" /></p>
                     <p><input type="submit" value="Get next Wordle guess" /></p>
                 </form>
+                <form method="get" action="/">
+                    <p><input type="submit" value="Reset wordle solver" /></p>
+                </form>
             </body>
         </html>
-    '''.format(errors=errors,trial_word=trial_word)
+    '''.format(errors=errors,trial_word=trial_word,n_words_remaining=n_words_remaining)
 
 if __name__ == '__main__':
   app.run()
