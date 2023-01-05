@@ -46,7 +46,7 @@ class WordleResultsManyWords:
         self.t_solve_all_words = t_solve_all_words
         self.basic_stats = basic_stats
 
-def run_wordle_solver(mode,next_word_selection):
+def run_wordle_solver(mode,next_word_selection,rag_colours):
 
     #------------------------------#
     #--- Initial pre_processing ---#
@@ -59,17 +59,35 @@ def run_wordle_solver(mode,next_word_selection):
     if "n_guesses_dict" not in locals():
         n_guesses_dict=dict()
         
+    #--------------------------------------------#
+    #--- Run for real wordle puzzle (web app) ---#
+    #--------------------------------------------#
+    
+    if mode == "real_web_app":
+        
+        #Input dummy true word (as we don't know the true word for this mode)
+        true_word="unknown"
+        
+        #Initialise various variables for "find_word" function
+        all_words_remaining,n_words_remaining,all_possible_letters_remaining,count=stp0.initialise_variables(all_words)
+        
+         all_words_remaining,n_words_remaining,all_possible_letters_remaining,count=find_word_loop_function(all_words,true_word,next_word_selection,mode,rag_colours,all_words_remaining,n_words_remaining,all_possible_letters_remaining,count)
+        
+        #Output statistics
+        print("\nThe word is: ", guess_word)
+        print("Number of guesses: ",n_guesses)
+    
     #----------------------------------#
     #--- Run for real wordle puzzle ---#
     #----------------------------------#
 
-    if mode == "real":
+    elif mode == "real":
         
         #Input dummy true word (as we don't know the true word for this mode)
         true_word="unknown"
         
         #Find word using wordle solver
-        guess_word,n_guesses=find_word(all_words,true_word,next_word_selection,mode)
+        guess_word,n_guesses=find_word(all_words,true_word,next_word_selection,mode,rag_colours)
         
         #Output statistics
         print("\nThe word is: ", guess_word)
@@ -91,7 +109,7 @@ def run_wordle_solver(mode,next_word_selection):
         check_time = time.time()
 
         #Find word using wordle solver
-        guess_word,n_guesses=find_word(all_words,true_word,next_word_selection,mode)
+        guess_word,n_guesses=find_word(all_words,true_word,next_word_selection,mode,rag_colours)
 
         #End timer
         end_time = time.time()
@@ -144,7 +162,7 @@ def run_wordle_solver(mode,next_word_selection):
             true_word=words_to_test[ind]
 
             #Get final guess for specific word
-            guess_word,n_guesses=find_word(all_words,true_word,next_word_selection,mode)
+            guess_word,n_guesses=find_word(all_words,true_word,next_word_selection,mode,rag_colours)
 
             #Check that guess word is the same as the true word
             if guess_word!=true_word:
