@@ -22,8 +22,8 @@ import time
 from progressbar import progressbar
 
 #Import user defined modules
-from find_word import find_word
-from helper_functions.other_helper_functions import other_helper_functions as oth
+from backend._2_helper_functions.find_word import find_word_python
+from backend._2_helper_functions.other_helper_functions import other_helper_functions as oth
 
 #Define classes for saving results
 class WordleResultsOneWord:
@@ -46,7 +46,7 @@ class WordleResultsManyWords:
         self.t_solve_all_words = t_solve_all_words
         self.basic_stats = basic_stats
 
-def run_wordle_solver(mode,next_word_selection):
+def run_wordle_solver(mode,next_word_selection,rag_colours):
 
     #------------------------------#
     #--- Initial pre_processing ---#
@@ -58,18 +58,18 @@ def run_wordle_solver(mode,next_word_selection):
     #Initialise dictionary for saving results if doesn't already exist
     if "n_guesses_dict" not in locals():
         n_guesses_dict=dict()
-        
+    
     #----------------------------------#
     #--- Run for real wordle puzzle ---#
     #----------------------------------#
 
-    if mode == "real":
+    if mode == "real_python":
         
         #Input dummy true word (as we don't know the true word for this mode)
         true_word="unknown"
         
         #Find word using wordle solver
-        guess_word,n_guesses=find_word(all_words,true_word,next_word_selection,mode)
+        guess_word,n_guesses=find_word_python(all_words,true_word,next_word_selection,mode,rag_colours)
         
         #Output statistics
         print("\nThe word is: ", guess_word)
@@ -91,7 +91,7 @@ def run_wordle_solver(mode,next_word_selection):
         check_time = time.time()
 
         #Find word using wordle solver
-        guess_word,n_guesses=find_word(all_words,true_word,next_word_selection,mode)
+        guess_word,n_guesses=find_word_python(all_words,true_word,next_word_selection,mode,rag_colours)
 
         #End timer
         end_time = time.time()
@@ -144,7 +144,7 @@ def run_wordle_solver(mode,next_word_selection):
             true_word=words_to_test[ind]
 
             #Get final guess for specific word
-            guess_word,n_guesses=find_word(all_words,true_word,next_word_selection,mode)
+            guess_word,n_guesses=find_word_python(all_words,true_word,next_word_selection,mode,rag_colours)
 
             #Check that guess word is the same as the true word
             if guess_word!=true_word:
@@ -186,4 +186,4 @@ def run_wordle_solver(mode,next_word_selection):
 
     #Catch if user has incorrectly selected the model
     else:
-        print('Error! You must select either: "real, "one_word", "100_words" or "all_words"')
+        print('Error! You must select either: "real_python, "one_word", "100_words" or "all_words"')

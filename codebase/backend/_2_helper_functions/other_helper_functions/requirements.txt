@@ -1,6 +1,8 @@
 ###### Requirements without Version Specifiers ######
 #Note: If you are running this wordle solver for the first time, you may need to install some additional 
 #libraries. Depending on your environment, the following installation commands may be sufficient
+
 english-words
 plotly
 progressbar2
+flask
