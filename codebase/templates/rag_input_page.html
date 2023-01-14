@@ -22,26 +22,26 @@
 		<br>
 	  
 		<div>
-			<form method="post" action="/{{trial_word}}/{{remove_trial_word_no}}/{{previous_trial_word}}">
+			<form method="get" action="/find_word">
 				<div class="form">
 					<input type="submit" class="btn btn-success" value="Get next Wordle guess">
 				</div>
 			</form>
 		  
-			<form method="post" action="/{{trial_word}}/{{remove_trial_word_yes}}/{{previous_trial_word}}">
+			<form id="removeTrialWord" method="get" action="/find_word">
 				<div class="form">
 					<input type="submit" class="btn btn-warning" value="Word not accepted. Generate next guess.">
 				</div>
 			</form>
 		  
-			<form method="get" action="/">
+			<form id="resetWordleSolver" method="get" action="/">
 				<div class="form">
 					<input type="submit" class="btn btn-danger" value="Reset wordle solver">
 				</div>
 			</form>
 		</div>
 	
-	
+		<p>{{error_message}}</p>
 		<p>The number of possible words remaining is: {{n_words_remaining}}</p>
 		<p>The list of remaining possible words is: {{possible_words}}</p>
 	
@@ -96,6 +96,56 @@
 			}
 		  });
 		}
+		
+		
+		//***********************************//
+		//*** Button 2: Remove trial word ***//
+		//***********************************//
+		
+		//Update flag to ensure we remove trial word
+		var form = document.getElementById("removeTrialWord");
+
+		form.addEventListener("submit", function(event) {
+			event.preventDefault();
+			
+			// send the updated variable to the Python backend
+			fetch('/remove_trial_word_update', {
+				method: 'POST',
+				body: JSON.stringify({value: 'Yes'}), // replace 'new_value' with the actual value you want to update
+				headers: {
+					'Content-Type': 'application/json'
+				}
+			}).then(response => {
+				if (response.ok) {
+					form.submit(); // submit the form after the variable is updated
+				}
+			});
+		});
+		
+		//***********************************//
+		//*** Button 3: Reset wordle solver ***//
+		//***********************************//
+		
+		//Update flag to ensure we reset wordle solver
+		var form = document.getElementById("resetWordleSolver");
+
+		form.addEventListener("submit", function(event) {
+			event.preventDefault();
+			
+			// send the updated variable to the Python backend
+			fetch('/update_reset_wordle_solver_flag', {
+				method: 'POST',
+				body: JSON.stringify({value: 'Yes'}), // replace 'new_value' with the actual value you want to update
+				headers: {
+					'Content-Type': 'application/json'
+				}
+			}).then(response => {
+				if (response.ok) {
+					form.submit(); // submit the form after the variable is updated
+				}
+			});
+		});
+
 		
 	</script>
 	

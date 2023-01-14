@@ -157,7 +157,7 @@ def find_word_flask(mode,next_word_selection,rag_colours,trial_word,all_words_re
     error_message=""
     
     #For anything other than the first run, we first need to generate an updated list of possible words based on the previous trial word and the rag score
-    if rag_colours!=None and remove_trial_word=="No":
+    if rag_colours!="" and remove_trial_word=="No":
     
         #-----------------------------------------------------------------#
         #--- Step 1: Generate updated list of remaining possible words ---#
@@ -184,7 +184,7 @@ def find_word_flask(mode,next_word_selection,rag_colours,trial_word,all_words_re
     if error_flag==0:
     
         #If first iteration of brute force simple, it's quicker just to use manually generate the first word (which is the same every time)
-        if rag_colours==None and next_word_selection=="brute_force_simple":
+        if rag_colours=="" and next_word_selection=="brute_force_simple":
             trial_word="aerie"
 
         #For everything else, both first guesses nad next guess, we generate the next guess

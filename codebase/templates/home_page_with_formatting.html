@@ -7,9 +7,8 @@
 </head>
 <body>
 <div class="container">
-	{{errors}}
 	<h1>Wordle Solver</h1>
-	<form method="post" action=".">
+	<form method="post" action="/">
 		<select name="methodinput" id="methodinput">
 			<option value="select_algorithm">Select algorithm...</option>
 			<option value="random">Random</option>
@@ -22,6 +21,7 @@
 		<p id="definition">
 		</p>
 	</form>
+	<p>{{error_message}}</p>
 </div>
 
 <script>
@@ -37,5 +37,7 @@
 			document.getElementById('definition').innerHTML = '';
 		}
 	});
+		
+
 </script>
 </body>
