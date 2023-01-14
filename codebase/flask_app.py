@@ -15,7 +15,7 @@
 #--- Imports ---#
 #---------------#
 
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, jsonify
 from english_words import english_words_set
 from english_words import english_words_lower_alpha_set
 import copy
@@ -43,6 +43,7 @@ all_words,n_words=oth.get_all_five_letter_words(english_words_lower_alpha_set)
 all_words_remaining,n_words_remaining,all_possible_letters_remaining,count=stp0.initialise_variables(all_words)
 next_word_selection=""
 rag_colours=""
+tile_colours="no tile colours recorded yet!"
 
 #------------------------#
 #--- Page 0: Homepage ---#
@@ -170,21 +171,6 @@ def wordle_solver(trial_word="atest",remove_trial_word="No",previous_trial_word=
     #--------------------------#
     elif request.method == "POST" and remove_trial_word=="No":
         
-        #Initialise colour variables
-        colour1 = None
-        colour2 = None
-        colour3 = None
-        colour4 = None
-        colour5 = None
-        
-        #Get user inputs
-        colour1 = request.form["colour1input"].capitalize()
-        colour2 = request.form["colour2input"].capitalize()
-        colour3 = request.form["colour3input"].capitalize()
-        colour4 = request.form["colour4input"].capitalize()
-        colour5 = request.form["colour5input"].capitalize()
-        rag_colours=[colour1,colour2,colour3,colour4,colour5]
-        
         #Check that variables are accepted
         input_flag=0
         for colour in rag_colours:
@@ -225,31 +211,26 @@ def wordle_solver(trial_word="atest",remove_trial_word="No",previous_trial_word=
             for word in all_words_remaining:
                 possible_words=word+", "+possible_words
             
-    return '''
-        <html>
-            <body>
-                {errors}
-                <p>The list of remaining possible words is: {possible_words}</p>
-                <p>The number of possible words is: {n_words_remaining}</p>
-                <p>The next guess is: {trial_word}</p>
-                <p>Enter your colours:</p>
-                <form method="post" action="/{trial_word}/{remove_trial_word_no}/{previous_trial_word}">
-                    <p><input name="colour1input" /></p>
-                    <p><input name="colour2input" /></p>
-                    <p><input name="colour3input" /></p>
-                    <p><input name="colour4input" /></p>
-                    <p><input name="colour5input" /></p>
-                    <p><input type="submit" name="button" value="Get next Wordle guess" /></p>
-                </form>
-                <form method="post" action="/{trial_word}/{remove_trial_word_yes}/{previous_trial_word}">
-                    <p><input type="submit" name="button" value="Trial word not accepted. Generate next best trial word."/></p>
-                </form>
-                <form method="get" action="/">
-                    <p><input type="submit" name="button" value="Reset wordle solver" /></p>
-                </form>
-            </body>
-        </html>
-    '''.format(errors=errors,possible_words=possible_words,trial_word=trial_word,n_words_remaining=n_words_remaining,remove_trial_word_no="No",remove_trial_word_yes="Yes",previous_trial_word=previous_trial_word)
+    return render_template('rag_input_page.html', errors=errors,possible_words=possible_words,trial_word=trial_word,n_words_remaining=n_words_remaining,remove_trial_word_no="No",remove_trial_word_yes="Yes",previous_trial_word=previous_trial_word)
+
+def tile_colour_mapping(colour: str):
+    if colour=='lightgrey' or colour=="":
+        colour='Red'
+    else:
+        colour=colour.capitalize()
+    return colour
+
+@app.route("/store_colors", methods=["POST"])
+def store_colors():
+    data = request.get_json()
+    global rag_colours
+    rag_colours=[tile_colour_mapping(data['tile1']),
+                 tile_colour_mapping(data['tile2']),
+                 tile_colour_mapping(data['tile3']),
+                 tile_colour_mapping(data['tile4']),
+                 tile_colour_mapping(data['tile5'])]
+    print("it me, richard, just storing some colours")
+    return jsonify({"message": "Colors stored successfully!"})
 
 if __name__ == '__main__':
   app.run()
