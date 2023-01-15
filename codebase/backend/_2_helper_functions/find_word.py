@@ -157,7 +157,7 @@ def find_word_flask(mode,next_word_selection,rag_colours,trial_word,all_words_re
     error_message=""
     
     #For anything other than the first run, we first need to generate an updated list of possible words based on the previous trial word and the rag score
-    if rag_colours!="" and remove_trial_word=="No":
+    if rag_colours!="" and remove_trial_word=="no":
     
         #-----------------------------------------------------------------#
         #--- Step 1: Generate updated list of remaining possible words ---#

@@ -8,14 +8,11 @@
 #To run on a local machine, navigate to the relevant folder in the terminal and use the command: python flask_app.py
 #To navigate, use "cd .\OneDrive\Documents\GitHub\wordle_solver\codebase\"
 
-#Next steps:
-# - Create a version of the wordle solver that can integrate with this app.
-
 #---------------#
 #--- Imports ---#
 #---------------#
 
-from flask import Flask, request, render_template, jsonify, redirect
+from flask import Flask, request, render_template, jsonify, redirect, url_for
 from english_words import english_words_set
 from english_words import english_words_lower_alpha_set
 import copy
@@ -38,33 +35,20 @@ app.config["DEBUG"] = True
 
 #Get list of all 5 letter words
 all_words,n_words=oth.get_all_five_letter_words(english_words_lower_alpha_set)
-reset=1
 
 #------------------------#
 #--- Page 0: Homepage ---#
 #------------------------#
 
 @app.route("/", methods=["GET", "POST"])
-def wordle_homepage():
-    
-    #Ensure relevant variables are global
-    global all_words,n_words
-    global all_words_remaining,n_words_remaining,all_possible_letters_remaining,count
-    global next_word_selection,rag_colours,tile_colours,remove_trial_word,error_message,reset
-    global trial_word,previous_trial_word
+@app.route("/home/<reset>", methods=["GET", "POST"])
+def wordle_homepage(reset="yes"):
     
     #If starting or re-starting
     #if request.method==None or request.method == "GET":
-    if reset==1:
-    
-        #Initialise global variables
-        all_words_remaining,n_words_remaining,all_possible_letters_remaining,count=stp0.initialise_variables(all_words)
-        next_word_selection=""
-        rag_colours=""
-        trial_word=""
-        tile_colours=""
-        remove_trial_word="No"
-        error_message = "" #Initialise error string for printing error if needed
+    if reset=="yes":
+        
+        error_message=""
         
     #----------------------------------#
     #--- Page 1: Process user input ---#
@@ -86,9 +70,26 @@ def wordle_homepage():
         #Else, complete calculation
         elif method in accepted_methods:
             
-            #Get first trial word
+            #Ensure relevant variables are global
+            global all_words,n_words
+            global all_words_remaining,n_words_remaining,all_possible_letters_remaining,count
+            global next_word_selection,rag_colours,tile_colours,remove_trial_word
+            global trial_word,previous_trial_word
+            
+            #Initialise global variables
+            all_words_remaining,n_words_remaining,all_possible_letters_remaining,count=stp0.initialise_variables(all_words)
+            next_word_selection=""
+            rag_colours=""
+            tile_colours=""
+            remove_trial_word="no"
+            trial_word=""
+            previous_trial_word=""
+            
+            #Initialise local variables
             mode="real_flask"
             next_word_selection=method
+            
+            #Get trial wor
             trial_word,all_words_remaining,n_words_remaining,all_possible_letters_remaining,error_flag,error_message=find_word_flask(mode,
                                                                                                             next_word_selection,
                                                                                                             rag_colours,
@@ -99,33 +100,31 @@ def wordle_homepage():
                                                                                                             remove_trial_word)
             
             #Go to rag score page
-            print("YEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE")
-            return redirect("/find_word")
+            return redirect("/find_word/no", code=301)
             
     #Return homepage
-    reset=0
     return render_template('home_page_with_formatting.html', error_message=error_message)
 
 #--------------------------------------#
 #--- Page 3: Input RAG scores pages ---#
 #--------------------------------------#
 
-@app.route("/find_word", methods=["GET", "POST"])
-def wordle_solver():
+@app.route("/find_word/<remove_trial_word>", methods=["GET", "POST"])
+def wordle_solver(remove_trial_word="no"):
     
     #Ensure relevant variables are global
     global all_words,n_words
     global all_words_remaining,n_words_remaining,all_possible_letters_remaining,count
-    global next_word_selection,rag_colours,tile_colours,remove_trial_word,error_message
+    global next_word_selection,rag_colours,tile_colours
     global trial_word,previous_trial_word
     
     #Initialise variables
     error_message = "" #Initialise error string for printing error if needed
     accepted_colours=["Green","Orange","Red"] #Initialise list for checking input
-    possible_words="Too many words to currently list."
+    possible_words="All words currently available."
     
     #If trial word not accepted, we need to bin it and get the next best word
-    if remove_trial_word=="Yes":
+    if remove_trial_word=="yes":
         
         #Remove word
         all_words_remaining.remove(trial_word)
@@ -153,12 +152,12 @@ def wordle_solver():
             possible_words=word+", "+possible_words
         
         #Reset trial word flag
-        remove_trial_word="No"
+        remove_trial_word="no"
     
     #-------------------------------------------------#
     #--- Process user input if we have rag colours ---#
     #-------------------------------------------------#
-    elif remove_trial_word=="No" and rag_colours!="":
+    elif remove_trial_word=="no" and rag_colours!="":
         
         #Check that variables are accepted
         input_flag=0
@@ -203,8 +202,14 @@ def wordle_solver():
     #----------------------#
     #--- Output webpage ---#
     #----------------------#
-    
-    return render_template('rag_input_page.html', error_message=error_message,possible_words=possible_words,trial_word=trial_word,n_words_remaining=n_words_remaining)
+    #If still no rag colours, initialise to red all
+    if rag_colours=="":
+        rag_colours=["Red","Red","Red","Red","Red"]
+    return render_template('rag_input_page.html',
+                           error_message=error_message,
+                           possible_words=possible_words,
+                           trial_word=trial_word,
+                           n_words_remaining=n_words_remaining)
 
 
 
@@ -228,20 +233,6 @@ def store_colors():
                  tile_colour_mapping(data['tile5'])]
     print("it me, richard, just storing some colours")
     return jsonify({"message": "Colors stored successfully!"})
-
-#Check if we need to remove word
-@app.route('/remove_trial_word_update', methods=['POST'])
-def update_remove_trial_word_flag():
-    global remove_trial_word
-    remove_trial_word = request.get_json()['value']
-    return jsonify({'success': True})
-
-#Check if we need to reset wordle solver
-@app.route('/update_reset_wordle_solver_flag', methods=['POST'])
-def update_reset_flag():
-    global reset
-    reset=1
-    return jsonify({'success': True})
 
 if __name__ == '__main__':
   app.run()
