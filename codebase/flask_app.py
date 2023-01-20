@@ -31,7 +31,7 @@ app.config["DEBUG"] = True
 #-----------------------------------#
 #--- Initialise global variables ---#
 #-----------------------------------#
-#We use global variables
+#For speed of development, we'll use global variables, but would potentially be better to use a backend SQL database
 
 #Get list of all 5 letter words
 all_words,n_words=oth.get_all_five_letter_words(english_words_lower_alpha_set)
@@ -42,54 +42,141 @@ all_words,n_words=oth.get_all_five_letter_words(english_words_lower_alpha_set)
 
 @app.route("/", methods=["GET", "POST"])
 @app.route("/home/<reset>", methods=["GET", "POST"])
-def wordle_homepage(reset="yes"):
+def wordle_homepage(reset="yes"):  
     
-    #If starting or re-starting
-    #if request.method==None or request.method == "GET":
+    #------------------------------#
+    #--- Check if (re-)starting ---#
+    #------------------------------#
+    
+    #If we just starting or ressting...
     if reset=="yes":
-        
+    
+        #...just set error message
         error_message=""
         
-    #----------------------------------#
-    #--- Page 1: Process user input ---#
-    #----------------------------------#
-
-    elif request.method == "POST":
+        #...and display homepage at bottom of function
         
-        #Initialise method variable e.g. random, rank, brute_force_simple etc.
-        accepted_methods=["random","rank","brute_force_simple"] #Initialise list for checking input
+    #--------------------#
+    #--- Check method ---#
+    #-------------------#
+    
+    #Otherwise, if not restarting, check user input
+    elif reset=="no":
+    
+        #Initialise variables for checking method
         method = None
-        
+        accepted_methods=["random","rank","brute_force_simple"] #Initialise list for checking input
+        error_message=""
+
         #Get input for method variable
         method = request.form["methodinput"].lower()
 
         #Check that method variable is from accepted list
         if method not in accepted_methods:
-            error_message = "Method not accepted. Try again."
-            
-        #Else, complete calculation
+
+            #If not, create output message...
+            error_message = "" #Blank actually looks better for now
+
+            #...and display homepage at bottom of function
+
+        #If method is in accepted list
         elif method in accepted_methods:
             
+            #----------------------------#
+            #--- Get first trial word ---#
+            #----------------------------#
+
             #Ensure relevant variables are global
             global all_words,n_words
             global all_words_remaining,n_words_remaining,all_possible_letters_remaining,count
-            global next_word_selection,rag_colours,tile_colours,remove_trial_word
+            global next_word_selection
+            global rag_colours,previous_rag_colours
             global trial_word,previous_trial_word
-            
+
             #Initialise global variables
             all_words_remaining,n_words_remaining,all_possible_letters_remaining,count=stp0.initialise_variables(all_words)
             next_word_selection=""
-            rag_colours=""
-            tile_colours=""
             remove_trial_word="no"
+            rag_colours=""
+            previous_rag_colours=""
             trial_word=""
             previous_trial_word=""
-            
+
             #Initialise local variables
             mode="real_flask"
             next_word_selection=method
+
+            #Get trial word
+            trial_word,all_words_remaining,n_words_remaining,all_possible_letters_remaining,error_flag,error_message=find_word_flask(mode,
+                                                                                                            next_word_selection,
+                                                                                                            rag_colours,
+                                                                                                            trial_word,
+                                                                                                            all_words_remaining,
+                                                                                                            n_words_remaining,
+                                                                                                            all_possible_letters_remaining,
+                                                                                                            remove_trial_word)
+
+            #Redirect to rag score page
+            return redirect("/find_word/no", code=301)
+        
+    #----------------------#
+    #--- Otherwise ---#
+    #----------------------#
+    
+    #And if all else fails...
+    else:
+        
+        #...just set error message
+        error_message=""
+    
+    #----------------------#
+    #--- Output webpage ---#
+    #----------------------#
+    return render_template('home_page_with_formatting.html', error_message=error_message)
+        
+#--------------------------------------#
+#--- Page 2: Input RAG scores pages ---#
+#--------------------------------------#
+
+@app.route("/find_word/<remove_trial_word>", methods=["GET", "POST"])
+def wordle_solver(remove_trial_word="no"):
+    
+    #Ensure relevant variables are global
+    global all_words,n_words
+    global all_words_remaining,n_words_remaining,all_possible_letters_remaining,count
+    global next_word_selection
+    global rag_colours,previous_rag_colours
+    global trial_word,previous_trial_word
+    
+    #Initialise variables
+    error_message = "" #Initialise error string for printing error if needed
+    accepted_colours=["Green","Orange","Red"] #Initialise list for checking input
+    possible_words="All words currently available."
+    
+    #-----------------------------------------#
+    #--- Remove trial word if not accepted ---#
+    #-----------------------------------------#
+    
+    #Check if trial word is accepted. If not we need to bin it and get the next best word
+    if remove_trial_word=="yes" and n_words_remaining>1:
+        
+        #Check if trial word is first word for brute force
+        if trial_word=="aerie": #"aerie" is currently the first word in the brute force method
+        
+            #Do not remove word, and add error message
+            error_message="'aerie' is definitely accepted by the Wordle app! Try inputting it again."
             
-            #Get trial wor
+        #Otherwise, continue to remove word    
+        else:
+
+            #Remove trial word from list
+            all_words_remaining.remove(trial_word)
+            n_words_remaining=n_words_remaining-1
+
+            #Get next trial word
+            mode="real_flask"
+            trial_word=previous_trial_word
+            rag_colours=previous_rag_colours
             trial_word,all_words_remaining,n_words_remaining,all_possible_letters_remaining,error_flag,error_message=find_word_flask(mode,
                                                                                                             next_word_selection,
                                                                                                             rag_colours,
@@ -99,65 +186,13 @@ def wordle_homepage(reset="yes"):
                                                                                                             all_possible_letters_remaining,
                                                                                                             remove_trial_word)
             
-            #Go to rag score page
-            return redirect("/find_word/no", code=301)
-            
-    #Return homepage
-    return render_template('home_page_with_formatting.html', error_message=error_message)
-
-#--------------------------------------#
-#--- Page 3: Input RAG scores pages ---#
-#--------------------------------------#
-
-@app.route("/find_word/<remove_trial_word>", methods=["GET", "POST"])
-def wordle_solver(remove_trial_word="no"):
-    
-    #Ensure relevant variables are global
-    global all_words,n_words
-    global all_words_remaining,n_words_remaining,all_possible_letters_remaining,count
-    global next_word_selection,rag_colours,tile_colours
-    global trial_word,previous_trial_word
-    
-    #Initialise variables
-    error_message = "" #Initialise error string for printing error if needed
-    accepted_colours=["Green","Orange","Red"] #Initialise list for checking input
-    possible_words="All words currently available."
-    
-    #If trial word not accepted, we need to bin it and get the next best word
-    if remove_trial_word=="yes":
-        
-        #Remove word
-        all_words_remaining.remove(trial_word)
-        n_words_remaining=n_words_remaining-1
-        
-        #Get next trial word
-        mode="real_flask"
-        trial_word=previous_trial_word
-        trial_word,all_words_remaining,n_words_remaining,all_possible_letters_remaining,error_flag,error_message=find_word_flask(mode,
-                                                                                                        next_word_selection,
-                                                                                                        rag_colours,
-                                                                                                        trial_word,
-                                                                                                        all_words_remaining,
-                                                                                                        n_words_remaining,
-                                                                                                        all_possible_letters_remaining,
-                                                                                                        remove_trial_word)
-        
-        #Output error message if error
-        if error_flag==1:
-            error_message=error_message
-            
-        #Get possible words as string
-        possible_words=""
-        for word in all_words_remaining:
-            possible_words=word+", "+possible_words
-        
-        #Reset trial word flag
-        remove_trial_word="no"
+            #Get remaining possible words as string
+            possible_words=get_possible_words_as_string(all_words_remaining)
     
     #-------------------------------------------------#
     #--- Process user input if we have rag colours ---#
     #-------------------------------------------------#
-    elif remove_trial_word=="no" and rag_colours!="":
+    elif remove_trial_word=="no" and rag_colours!="" and n_words_remaining>1:
         
         #Check that variables are accepted
         input_flag=0
@@ -176,10 +211,11 @@ def wordle_solver(remove_trial_word="no"):
             #--- Get next trial word ---#
             #---------------------------#
             
-            #Save previous trial word before generating new trial word
-            previous_trial_word=trial_word
+            #Temporary save previous trial word and rag score before generating new trial word
+            previous_trial_word_temp=trial_word
+            previous_rag_colours_temp=rag_colours
             
-            #Get first trial word
+            #Get next trial word
             mode="real_flask"
             trial_word,all_words_remaining,n_words_remaining,all_possible_letters_remaining,error_flag,error_message=find_word_flask(mode,
                                                                                                             next_word_selection,
@@ -190,29 +226,47 @@ def wordle_solver(remove_trial_word="no"):
                                                                                                             all_possible_letters_remaining,
                                                                                                             remove_trial_word)
             
-            #Output error message if error
+            #If we have an error
             if error_flag==1:
-                errors=error_message
                 
-            #Get possible words as string
-            possible_words=""
-            for word in all_words_remaining:
-                possible_words=word+", "+possible_words
+                #We don't reset the previous trial word and rag score
+                previous_trial_word_temp=None
+                previous_rag_colours_temp=None
+                
+            #Else if there's no error, we can safely move on
+            elif error_flag==0:
+                previous_trial_word=previous_trial_word_temp
+                previous_rag_colours=previous_rag_colours_temp
+                
+            #Get remaining possible words as string
+            possible_words=get_possible_words_as_string(all_words_remaining)
+            
+    #Else, if we just have one word remaining
+    elif n_words_remaining==1:
+        
+        #Set error message for trying to find more words
+        error_message="There are no more words left...you have found the word! To re-start, press 'Reset wordle solver'"
+        possible_words=trial_word
             
     #----------------------#
     #--- Output webpage ---#
     #----------------------#
-    #If still no rag colours, initialise to red all
-    if rag_colours=="":
-        rag_colours=["Red","Red","Red","Red","Red"]
+    
+    #Ensure rag colours are reset before outputting webpage
+    rag_colours=["Red","Red","Red","Red","Red"]
+    
+    #Display webpage
     return render_template('rag_input_page.html',
                            error_message=error_message,
                            possible_words=possible_words,
                            trial_word=trial_word,
                            n_words_remaining=n_words_remaining)
 
-
-
+def get_possible_words_as_string(all_words_remaining):
+    possible_words=all_words_remaining[0]
+    for word in all_words_remaining[1:]:
+            possible_words=possible_words+", "+word
+    return possible_words
 
 
 def tile_colour_mapping(colour: str):
