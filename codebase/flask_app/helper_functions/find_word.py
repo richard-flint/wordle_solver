@@ -8,10 +8,10 @@
 #user defined functions.
 
 #Import user defined functions
-from backend._2_helper_functions.step_0_initialise_variables import initialise_variables as stp0
-from backend._2_helper_functions.step_1_generate_next_trial_word import overall_generate_next_trial_word as stp1_0
-from backend._2_helper_functions.step_2_generate_rag_score import generate_rag_score as stp2
-from backend._2_helper_functions.step_3_update_lists import error_handling as stp3
+from helper_functions.step_0_initialise_variables import initialise_variables as stp0
+from helper_functions.step_1_generate_next_trial_word import overall_generate_next_trial_word as stp1_0
+from helper_functions.step_2_generate_rag_score import generate_rag_score as stp2
+from helper_functions.step_3_update_lists import error_handling as stp3
 
 #Import other modules
 import copy

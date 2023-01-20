@@ -22,8 +22,8 @@ import time
 from progressbar import progressbar
 
 #Import user defined modules
-from backend._2_helper_functions.find_word import find_word_python
-from backend._2_helper_functions.other_helper_functions import other_helper_functions as oth
+from helper_functions.find_word import find_word_python
+from helper_functions.other_helper_functions import other_helper_functions as oth
 
 #Define classes for saving results
 class WordleResultsOneWord:

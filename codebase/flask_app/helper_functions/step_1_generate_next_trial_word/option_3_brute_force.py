@@ -78,8 +78,8 @@ import copy
 from progressbar import progressbar
 
 #Import function from parallel folders
-from backend._2_helper_functions.step_2_generate_rag_score import generate_rag_score as stp2
-from backend._2_helper_functions.step_3_update_lists import generate_updated_list as stp3
+from helper_functions.step_2_generate_rag_score import generate_rag_score as stp2
+from helper_functions.step_3_update_lists import generate_updated_list as stp3
 
 #Define function
 def generate_word_using_brute_force(version,all_words_remaining,n_words_remaining,all_possible_letters_remaining,mode):

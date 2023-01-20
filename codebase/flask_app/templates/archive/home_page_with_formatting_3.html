@@ -1,0 +1,82 @@
+<html>
+<head>
+	<style>
+		body {
+			background-color: #F3F3F3;
+			font-family: sans-serif;
+		}
+		
+		h1 {
+		  font-size: 3em;
+		  font-weight: bold;
+		  margin-bottom: 20px;
+		}
+		
+		form {
+			max-width: 400px;
+			margin: 0 auto;
+			padding: 20px;
+			background-color: white;
+			border-radius: 5px;
+			box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+		}
+		p {
+			font-size: 18px;
+			margin: 10px 0;
+		}
+		select {
+			font-size: 16px;
+			padding: 10px;
+			border-radius: 5px;
+			border: 1px solid #CCC;
+			width: 100%;
+			box-sizing: border-box;
+			appearance: none;
+			-webkit-appearance: none;
+			-moz-appearance: none;
+		}
+		input[type="submit"] {
+			font-size: 16px;
+			padding: 10px 20px;
+			border-radius: 5px;
+			border: none;
+			background-color: #333;
+			color: white;
+			cursor: pointer;
+			width: 100%;
+		}
+		#definition {
+			font-size: 16px;
+			margin-top: 10px;
+		}
+	</style>
+</head>
+<body>
+	{{errors}}
+	<h1>Wordle Solver</h1>
+	<form method="post" action=".">
+		<p>
+			<select name="methodinput" id="methodinput">
+				<option value="Select algorithm">Select algorithm...</option>
+				<option value="random">Random</option>
+				<option value="rank">Rank</option>
+				<option value="brute_force_simple">Brute Force Simple</option>
+			</select>
+		</p>
+		<p><input type="submit" value="Get first trial word" /></p>
+		<p id="definition">
+			Definition goes here
+		</p>
+	</form>
+<script>
+	document.getElementById('methodinput').addEventListener('change', function() {
+		var method = this.value;
+		if (method === 'brute_force_simple') {
+			document.getElementById('definition').innerHTML = 'This method involves trying all possible combinations of letters to find a valid word.';
+		} else if (method === 'random') {
+			document.getElementById('definition').innerHTML = 'This method involves randomly generating combinations of letters to find a valid word.';
+		} else if (method === 'rank') {
+			document.getElementById('definition').innerHTML = 'This method involves ranking combinations of letters based on how common they are in the English language and trying the most common combinations first.';
+		}
+	});
+</script>

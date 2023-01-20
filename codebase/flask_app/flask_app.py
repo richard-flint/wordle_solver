@@ -6,7 +6,7 @@
 
 #--- Run locally ---#
 #To run on a local machine, navigate to the relevant folder in the terminal and use the command: python flask_app.py
-#To navigate, use "cd .\OneDrive\Documents\GitHub\wordle_solver\codebase\"
+#To navigate, use "cd .\OneDrive\Documents\GitHub\wordle_solver\codebase\flask_app"
 
 #---------------#
 #--- Imports ---#
@@ -17,9 +17,9 @@ from english_words import english_words_set
 from english_words import english_words_lower_alpha_set
 import copy
 
-from backend._2_helper_functions.find_word import find_word_flask
-from backend._2_helper_functions.other_helper_functions import other_helper_functions as oth
-from backend._2_helper_functions.step_0_initialise_variables import initialise_variables as stp0
+from helper_functions.find_word import find_word_flask
+from helper_functions.other_helper_functions import other_helper_functions as oth
+from helper_functions.step_0_initialise_variables import initialise_variables as stp0
 
 #-----------------------#
 #--- Start flask app ---#

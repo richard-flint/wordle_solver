@@ -1,6 +1,6 @@
 #Imports
 import copy
-from backend._2_helper_functions.step_3_update_lists import generate_updated_list as stp3
+from helper_functions.step_3_update_lists import generate_updated_list as stp3
 
 def get_remaining_words_with_error_handling(all_words_remaining,all_possible_letters_remaining,rag_score,trial_word,mode):
     
