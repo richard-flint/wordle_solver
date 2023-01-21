@@ -26,11 +26,15 @@ This approach is repeated until the puzzle is solved.
 ## Getting Started
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
 
-### Installing and running web app locally
-* Clone this repository: git clone https://github.com/YOUR_USERNAME/wordle-flask-app.git
-* Install the required packages: pip install -r requirements.txt
-* Run the app: python app.py
-* View the app: Visit http://localhost:5000 in your browser to view the app.
+### Installing and virtual web app locally using a Python virtual environment
+* Clone this repository: ```git clone https://github.com/YOUR_USERNAME/wordle-flask-app.git```
+* Navigate to "codebase" folder in this repository using the command line: ```cd \wordle_solver\codebase```
+* Activate virtual environment: ```myvenv\Scripts\activate``` (Windows) or ```source venv/bin/activate``` (Linuz/OS)
+* Navigate to flask app folder: ```cd flask_app```
+* Run flask app: ```python flask_app.py```
+* View the app: Visit http://localhost:5000 in your browser to view the app
+
+### 
 
 ## Authors
 Richard Flint, Marina Favaro
