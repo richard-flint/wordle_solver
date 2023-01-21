@@ -1,4 +1,4 @@
-#Wordle Solver (Flask App)
+# Wordle Solver (Flask App)
 This is a simple web application that helps users solve the Guardian's daily [Wordle puzzle] (https://www.nytimes.com/games/wordle). It currently allows users to select one of three backend algorithms:
 * Random
 * Rank
