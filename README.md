@@ -15,44 +15,25 @@ The web app currently allows users to select one of three backend algorithms:
 </p>
 The app then generates a trial word, and enables users to input the colours from the Guardian's wordle app before producing the next trial word.
 <p align="center">
-  <img src=https://user-images.githubusercontent.com/63592862/213870880-ac649656-6206-4340-a69c-c70e4353f661.png width="500" height="325">
+  <img src=https://user-images.githubusercontent.com/63592862/213871605-8db959a3-dd6e-4849-b7d6-47bde318c2b8.png width="500" height="325">
 </p>
 
 This approach is repeated until the puzzle is solved.
 <p align="center">
-  <img src=https://user-images.githubusercontent.com/63592862/213870880-ac649656-6206-4340-a69c-c70e4353f661.png width="500" height="325">
+  <img src=https://user-images.githubusercontent.com/63592862/213871625-4d079634-d610-442b-b1ed-396547ebc725.png width="500" height="325">
 </p>
 
 ## Getting Started
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
 
-## Prerequisites
+### Prerequisites
 You will need to have Python and Flask installed on your system.
 
-## Installing
-Clone the repository
-Copy code
-git clone https://github.com/YOUR_USERNAME/wordle-flask-app.git
-Install the required packages
-Copy code
-pip install -r requirements.txt
-Run the app
-Copy code
-python app.py
-Visit http://localhost:5000 in your browser to view the app.
-Built With
-Flask - The web framework used
-Wordle - The library used to generate word clouds
-Contributing
-Please read CONTRIBUTING.md for details on our code of conduct, and the process for submitting pull requests to us.
+### Installing
+* Clone this repository: git clone https://github.com/YOUR_USERNAME/wordle-flask-app.git
+* Install the required packages: pip install -r requirements.txt
+* Run the app: python app.py
+* View the app: Visit http://localhost:5000 in your browser to view the app.
 
 ## Authors
-Your Name - Initial work - YOUR_USERNAME
-
-## License
-This project is licensed under the MIT License - see the LICENSE.md file for details.
-
-## Acknowledgments
-Hat tip to anyone whose code was used
-Inspiration
-etc
+Richard Flint, Marina Favaro
