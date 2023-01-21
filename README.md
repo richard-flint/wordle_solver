@@ -1,7 +1,7 @@
 # Wordle Solver (Flask App)
 This is a simple web application that helps users solve the Guardian's daily [Wordle puzzle](https://www.nytimes.com/games/wordle/). 
 
-**Note: This app is under active development, including both backend algorithms and the frontend user interface. Current areas of development include:**
+**Note: This app is under active development. This includes both the backend algorithms that "solve" the Wordle puzzle, and the frontend user interface. The current version of the app should nonetheless work if installed as instructed below. Current areas of development include:**
 * **Deployment on serverless infrastructure**
 * **Training an RL agent and comparing to existing algorithms**
 
