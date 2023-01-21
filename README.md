@@ -27,7 +27,7 @@ This approach is repeated until the puzzle is solved.
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
 
 ### Installing and virtual web app locally using a Python virtual environment
-* Clone this repository: ```git clone https://github.com/YOUR_USERNAME/wordle-flask-app.git```
+* Clone this repository: ```git clone https://github.com/richard-flint/wordle_solver.git```
 * Navigate to "codebase" folder in this repository using the command line: ```cd \wordle_solver\codebase```
 * Activate virtual environment: ```myvenv\Scripts\activate``` (Windows) or ```source venv/bin/activate``` (Linuz/OS)
 * Navigate to flask app folder: ```cd flask_app```
