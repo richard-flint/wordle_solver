@@ -26,10 +26,7 @@ This approach is repeated until the puzzle is solved.
 ## Getting Started
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
 
-### Prerequisites
-You will need to have Python and Flask installed on your system.
-
-### Installing
+### Installing and running web app locally
 * Clone this repository: git clone https://github.com/YOUR_USERNAME/wordle-flask-app.git
 * Install the required packages: pip install -r requirements.txt
 * Run the app: python app.py
