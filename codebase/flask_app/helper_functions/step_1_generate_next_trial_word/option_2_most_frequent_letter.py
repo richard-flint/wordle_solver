@@ -74,7 +74,7 @@ def generate_word_from_most_frequent_remaining_letters(all_words_remaining,
     for j in range(5):
         rank_vector=letter_count_all_letters_all_columns[:,j].argsort()
         rank_matrix[:,j]=np.copy(rank_vector)
-        
+    
     #--- Find the word with the highest overall score ---#
 
     #Initialise rank matrix for each letter in each word

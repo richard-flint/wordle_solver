@@ -8,6 +8,7 @@
 
 #Import libraries
 import numpy as np
+import pandas as pd
 import random
 
 #-----------------------------------------------#
@@ -75,6 +76,19 @@ def get_all_five_letter_words(all_words_original_set):
             
     #Return final list
     return all_five_letter_words_a_z_only, n_words_final
+
+def import_wordle_word_list():
+    
+    #Import data from csv file
+    csv_path=r'data/full_word_lists/original_wordle_list.csv'
+    df = pd.read_csv(csv_path)
+    
+    #Convert to list
+    all_words_as_list=list(df['all_wordle_words'])
+    
+    #Count number of words
+    n_words=len(all_words_as_list)
+    return all_words_as_list,n_words
 
 def create_letter_matrix_from_word_list(word_list):
     

@@ -53,8 +53,9 @@ def run_wordle_solver(mode,next_word_selection,rag_colours):
     #------------------------------#
 
     #Get list of all 5 letter words
-    all_words,n_words=oth.get_all_five_letter_words(english_words_lower_alpha_set)
-
+    #all_words,n_words=oth.get_all_five_letter_words(english_words_lower_alpha_set)
+    all_words,n_words=oth.import_wordle_word_list()
+    
     #Initialise dictionary for saving results if doesn't already exist
     if "n_guesses_dict" not in locals():
         n_guesses_dict=dict()

@@ -47,7 +47,11 @@ def find_word_python(all_words,true_word,next_word_selection,mode,rag_colours):
         
         #If first iteration of brute force simple, it's quicker just to use manually generate the first word (which is the same every time)
         if n_words_remaining==n_words and next_word_selection=="brute_force_simple":
-            trial_word="aerie"
+            trial_word="erase"
+            
+        #If first iteration of rank, it's quicker just to use manually generate the first word (which is the same every time)
+        elif n_words_remaining==n_words and next_word_selection=="brute_force_simple":
+            trial_word="caddy"
         
         #If there is an error flag, we don't want to re-generate a new random word
         elif error_flag==1:
@@ -185,9 +189,13 @@ def find_word_flask(mode,next_word_selection,rag_colours,trial_word,all_words_re
     
         #If first iteration of brute force simple, it's quicker just to use manually generate the first word (which is the same every time)
         if rag_colours=="" and next_word_selection=="brute_force_simple":
-            trial_word="aerie"
+            trial_word="erase"
+            
+        #If first iteration of rank, it's quicker just to use manually generate the first word (which is the same every time)
+        elif rag_colours=="" and next_word_selection=="rank":
+            trial_word="caddy"     
 
-        #For everything else, both first guesses nad next guess, we generate the next guess
+        #For everything else, both first guesses and next guess, we generate the next guess
         else:
             trial_word=stp1_0.generate_next_trial_word(next_word_selection,
                                                        all_words_remaining,

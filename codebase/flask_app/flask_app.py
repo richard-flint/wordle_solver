@@ -13,8 +13,8 @@
 #---------------#
 
 from flask import Flask, request, render_template, jsonify, redirect, url_for
-from english_words import english_words_set
-from english_words import english_words_lower_alpha_set
+#from english_words import english_words_set
+#from english_words import english_words_lower_alpha_set
 import copy
 
 from helper_functions.find_word import find_word_flask
@@ -34,7 +34,8 @@ app.config["DEBUG"] = True
 #For speed of development, we'll use global variables, but would potentially be better to use a backend SQL database
 
 #Get list of all 5 letter words
-all_words,n_words=oth.get_all_five_letter_words(english_words_lower_alpha_set)
+#all_words,n_words=oth.get_all_five_letter_words(english_words_lower_alpha_set)
+all_words,n_words=oth.import_wordle_word_list()
 
 #------------------------#
 #--- Page 0: Homepage ---#
@@ -161,10 +162,16 @@ def wordle_solver(remove_trial_word="no"):
     if remove_trial_word=="yes" and n_words_remaining>1:
         
         #Check if trial word is first word for brute force
-        if trial_word=="aerie": #"aerie" is currently the first word in the brute force method
+        if trial_word=="erase": #"aerie" is currently the first word in the brute force method
         
             #Do not remove word, and add error message
-            error_message="'aerie' is definitely accepted by the Wordle app! Try inputting it again."
+            error_message="'erase' is definitely accepted by the Wordle app! Try inputting it again."
+            
+        #Check if trial word is first word for rank method
+        elif trial_word=="caddy": #"caddy" is currently the first word in the rank
+        
+            #Do not remove word, and add error message
+            error_message="'caddy' is definitely accepted by the Wordle app! Try inputting it again."
             
         #Otherwise, continue to remove word    
         else:
