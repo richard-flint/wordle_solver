@@ -10,6 +10,7 @@
 import numpy as np
 import pandas as pd
 import random
+import csv 
 
 #-----------------------------------------------#
 #--- Generate initial list of 5 letter words ---#
@@ -114,3 +115,31 @@ def get_random_true_word(all_words):
     true_word_location=random.randint(0,n_words-1)
     true_word=all_words[true_word_location]
     return true_word
+
+#----------------------#
+#--- Save test data ---#
+#----------------------#
+#This function saves the outputs of batch testing of different algorithms
+#e.g. when testing 100 words, or all possible words
+
+def save_test_data(n_trails_all_words,mode,method):
+
+    # Name of the CSV file
+    filename = f"test_data/{method}_{mode}_test_data.csv"
+    
+    #Attach header to data
+    n_trails_all_words=["data"]+n_trails_all_words
+
+    # Writing to CSV file
+    with open(filename, 'w', newline='') as csvfile:
+
+        # Creating a CSV writer object
+        csvwriter = csv.writer(csvfile)
+
+        # Writing the column headers and data rows
+        for item in n_trails_all_words:
+            csvwriter.writerow([item])
+            
+    #Write return message
+    message="Data saved successfully."
+    return message
