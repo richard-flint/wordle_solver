@@ -23,7 +23,7 @@ def find_word_python(all_words,true_word,next_word_selection,mode,rag_colours):
     #----------------------------#
     
     #Initialise various variables for "find_word" function
-    all_words_remaining,n_words_remaining,all_possible_letters_remaining,count=stp0.initialise_variables(all_words)
+    all_words_remaining,n_words_remaining,all_possible_letters_remaining,count,rank_start_word,bfs_start_word=stp0.initialise_variables(all_words)
     n_words=len(all_words)
     error_flag=0 #Initialise error flag
     
@@ -46,12 +46,12 @@ def find_word_python(all_words,true_word,next_word_selection,mode,rag_colours):
         #------------------------------#
         
         #If first iteration of brute force simple, it's quicker just to use manually generate the first word (which is the same every time)
-        if n_words_remaining==n_words and next_word_selection=="brute_force_simple":
-            trial_word="erase"
+        if n_words_remaining==n_words and next_word_selection=="brute_force_simple" and bfs_start_word!="":
+            trial_word=bfs_start_word
             
         #If first iteration of rank, it's quicker just to use manually generate the first word (which is the same every time)
-        elif n_words_remaining==n_words and next_word_selection=="brute_force_simple":
-            trial_word="caddy"
+        elif n_words_remaining==n_words and next_word_selection=="rank" and rank_start_word!="":
+            trial_word=rank_start_word
         
         #If there is an error flag, we don't want to re-generate a new random word
         elif error_flag==1:
@@ -154,7 +154,7 @@ def find_word_python(all_words,true_word,next_word_selection,mode,rag_colours):
 #---------------------------------------------------------------------------------------------------#
 
 #Run wordle solver for flask app
-def find_word_flask(mode,next_word_selection,rag_colours,trial_word,all_words_remaining,n_words_remaining,all_possible_letters_remaining,remove_trial_word):
+def find_word_flask(mode,next_word_selection,rag_colours,trial_word,all_words_remaining,n_words_remaining,all_possible_letters_remaining,remove_trial_word,rank_start_word,bfs_start_word):
     
     #Initialise variables
     error_flag=0
@@ -188,12 +188,12 @@ def find_word_flask(mode,next_word_selection,rag_colours,trial_word,all_words_re
     if error_flag==0:
     
         #If first iteration of brute force simple, it's quicker just to use manually generate the first word (which is the same every time)
-        if rag_colours=="" and next_word_selection=="brute_force_simple":
-            trial_word="erase"
+        if rag_colours=="" and next_word_selection=="brute_force_simple" and bfs_start_word!="":
+            trial_word=bfs_start_word
             
         #If first iteration of rank, it's quicker just to use manually generate the first word (which is the same every time)
-        elif rag_colours=="" and next_word_selection=="rank":
-            trial_word="caddy"     
+        elif rag_colours=="" and next_word_selection=="rank" and rank_start_word!="":
+            trial_word=rank_start_word
 
         #For everything else, both first guesses and next guess, we generate the next guess
         else:

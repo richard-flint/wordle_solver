@@ -89,13 +89,13 @@ def wordle_homepage(reset="yes"):
 
             #Ensure relevant variables are global
             global all_words,n_words
-            global all_words_remaining,n_words_remaining,all_possible_letters_remaining,count
+            global all_words_remaining,n_words_remaining,all_possible_letters_remaining,count,rank_start_word,bfs_start_word
             global next_word_selection
             global rag_colours,previous_rag_colours
             global trial_word,previous_trial_word
 
             #Initialise global variables
-            all_words_remaining,n_words_remaining,all_possible_letters_remaining,count=stp0.initialise_variables(all_words)
+            all_words_remaining,n_words_remaining,all_possible_letters_remaining,count,rank_start_word,bfs_start_word=stp0.initialise_variables(all_words)
             next_word_selection=""
             remove_trial_word="no"
             rag_colours=""
@@ -115,7 +115,9 @@ def wordle_homepage(reset="yes"):
                                                                                                             all_words_remaining,
                                                                                                             n_words_remaining,
                                                                                                             all_possible_letters_remaining,
-                                                                                                            remove_trial_word)
+                                                                                                            remove_trial_word,
+                                                                                                            rank_start_word,
+                                                                                                            bfs_start_word)
 
             #Redirect to rag score page
             return redirect("/find_word/no", code=301)
@@ -144,7 +146,7 @@ def wordle_solver(remove_trial_word="no"):
     
     #Ensure relevant variables are global
     global all_words,n_words
-    global all_words_remaining,n_words_remaining,all_possible_letters_remaining,count
+    global all_words_remaining,n_words_remaining,all_possible_letters_remaining,count,rank_start_word,bfs_start_word
     global next_word_selection
     global rag_colours,previous_rag_colours
     global trial_word,previous_trial_word
@@ -191,7 +193,9 @@ def wordle_solver(remove_trial_word="no"):
                                                                                                             all_words_remaining,
                                                                                                             n_words_remaining,
                                                                                                             all_possible_letters_remaining,
-                                                                                                            remove_trial_word)
+                                                                                                            remove_trial_word,
+                                                                                                            rank_start_word,
+                                                                                                            bfs_start_word)
             
             #Get remaining possible words as string
             possible_words=get_possible_words_as_string(all_words_remaining)
@@ -231,7 +235,9 @@ def wordle_solver(remove_trial_word="no"):
                                                                                                             all_words_remaining,
                                                                                                             n_words_remaining,
                                                                                                             all_possible_letters_remaining,
-                                                                                                            remove_trial_word)
+                                                                                                            remove_trial_word,
+                                                                                                            rank_start_word,
+                                                                                                            bfs_start_word)
             
             #If we have an error
             if error_flag==1:

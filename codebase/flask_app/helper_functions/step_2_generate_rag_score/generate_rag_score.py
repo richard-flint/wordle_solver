@@ -4,34 +4,68 @@
 #This function compares a trial word against the actual word, and returns a
 #RAG rating for each letter using the following (standard Wordle) definitions:
 #--- "Green"  = trial letter is the same as true letter
-#--- "Orange" = trial letter appears at least once in true word, but not in the
-#               current position in the trial word
+#--- "Orange" = trial letter appears at in true word, but not in the
+#               current position in the trial word. If trial letter appears
+#               more often in trial word than in true word, then the number of
+#               orange scores matches the number of occurences in the true word.
+#               Extra occurences are marked as "Red".
 #--- "Red"    = trial letter does not appear in true word
 
 #The function returns a list of words that correspond to five 
 #RAG ratings, one for each letter
 
 def check_letters_automatically(true_word,trial_word):
-    
+
     #Initialise score list
     true_word_letters=[]
     trial_word_letters=[]
     all_scores=[]
-    
+
     #Get lists of letters
     for i in range(5):
         true_word_letters.append(true_word[i])
         trial_word_letters.append(trial_word[i])
-        
-    #Get rag score for each letter in trial word
+
+    #Initialise variables
+    all_scores=["Red"]*5 #RAG score list
+    n_iterations=0       #Variable for counting iterations
+    i=0                  #Variable for position in word
+
+    #*** Check green ***#
+
+    #First, check for "Green" by comparing elements in list pairwise
     for i in range(5):
+
+        #Check if trial letter is in true word in same poisition
         if trial_word_letters[i]==true_word_letters[i]:
-            all_scores.append("Green")
-        elif trial_word_letters[i] in true_word_letters:
-            all_scores.append("Orange")
-        else:
-            all_scores.append("Red")
-            
+
+            #If yes, record "Green" score
+            all_scores[i]="Green"
+
+            #Replace letters that are recorded as green
+            true_word_letters[i]=""
+            trial_word_letters[i]=""
+
+    #*** Check orange ***#
+
+    #Next, check for "Orange"
+    #Note, we need to do this separately because Green takes precedent over Orange
+    for i in range(5):
+
+        #Get trial letter
+        trial_letter=trial_word_letters[i]
+
+        if (trial_letter!="") and (trial_letter in true_word_letters):
+
+            #Record "Orange" score
+            all_scores[i]="Orange"
+
+            #Replace letters that are recorded as "Orange" with ""
+            #This avoids double counting oranges
+            trial_word_letters[i]=""
+            position_in_true_word=true_word_letters.index(trial_letter)
+            true_word_letters[position_in_true_word]=""
+
     #Return final value
     return all_scores
 

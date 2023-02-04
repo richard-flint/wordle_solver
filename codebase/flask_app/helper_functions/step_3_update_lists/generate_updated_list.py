@@ -59,9 +59,10 @@ import copy
 def get_remaining_words(all_words_remaining,all_possible_letters_remaining,rag_score,trial_word):
     
     #Get possible letters for each column
-    all_possible_letters_remaining,orange_letters=get_possible_letters(all_possible_letters_remaining,rag_score,trial_word)
+    all_possible_letters_remaining,min_max_occurences=get_possible_letters(all_possible_letters_remaining,rag_score,trial_word)
     
     #Create copy of all_words list so we can delete words
+    #without affecting loop that includes all_words_remaining
     all_words_remaining_updated=all_words_remaining.copy()
     
     #Cycle through all words in list of remaining possible words
@@ -92,38 +93,33 @@ def get_remaining_words(all_words_remaining,all_possible_letters_remaining,rag_s
             #       we use the same approach lower down too.)
             if check == False:
                 delete_word_flag=True
-        
-        #*** Check word fulfills criteria associated with orange letters ***#
-        
-        #For each letter in the orange letter list
-        for specific_orange_letter in orange_letters.keys():
-            
-            #Check if orange letter is in word. If not, then delete word
-            if specific_orange_letter not in word:
-                delete_word_flag=True
-            
-            #Check if orange letter is in at least one of the correct columns...
-            
-            #...by first getting the list of possible columns for a specific orange letter
-            possible_columns=orange_letters[specific_orange_letter]
-            actual_columns=[]
-            
-            #...and find the columns for all occuranges of that letter in the test word
-            for i in range(5):
-                if word[i]==specific_orange_letter:
-                    actual_columns.append(i)
-            
-            #...and check that these occurances match the possible positions of orange letters
-            for i in range(len(actual_columns)):
                 
-                #If the actual position is not one of the possible positions, delete word
-                if actual_columns[i] not in possible_columns:
-                    delete_word_flag=True
-
+        #*** Check word fulfills max min occurences criteria ***#
+        
+        #For each letter in the max min occurences dictionary
+        for specific_letter in min_max_occurences.keys():
+            
+            #Count number of  occurences of specific letter in word
+            n_occurences=word.count(specific_letter)
+            
+            #Check if n_occurences is between maximum and minimum value
+            min_possible_occurences=min_max_occurences[specific_letter][0]
+            max_possible_occurences=min_max_occurences[specific_letter][1]
+            if (n_occurences<min_possible_occurences) or (n_occurences>max_possible_occurences):
+                
+                #If not, set delete word flag
+                delete_word_flag=True
+                
+        #*** Delete word ***#
+                
         #If delete word flag is now set to true, delete word from list         
         if delete_word_flag==True:
             all_words_remaining_updated.remove(word)
-        
+    
+    #**************#
+    #*** Return ***#
+    #**************#
+    
     #Return remaining lists after looping through all words
     return all_words_remaining_updated,all_possible_letters_remaining
 
@@ -134,179 +130,221 @@ def get_remaining_words(all_words_remaining,all_possible_letters_remaining,rag_s
 # 1) an updated dictionary of possible letters for each column ("all_possible_letters")
 # 2) an updated dictionary of letters and their possible positions in the true word ("orange_letters")
 
-def get_possible_letters(all_possible_letters,score,trial_word):
-    
-    #Initialise i
-    i=0
+def get_possible_letters(all_possible_letters_remaining,rag_score,trial_word):
     
     #Initialise dictionary for storing "orange" letters
-    orange_letters=dict()
+    orange_letters=[]
     
-    #Get list of column numbers that are either red or orange (this is for the "if orange" condition)
-    red_or_orange_columns=[]
-    for j in range(5):
-        if (score[j] == "Red" or score[j] == "Orange"):
-            red_or_orange_columns.append(j)
+    #Initialise dictionary for storing minimum and maximum possible occurences of certain "orange" letters
+    min_max_occurences=dict()
+    
+    #*******************#        
+    #*** Check green ***#
+    #*******************#
+    
+    #Initialise i for counting
+    i=0
     
     #Loop through columns 1 to 5
-    for column in all_possible_letters.keys():
+    for column in all_possible_letters_remaining.keys():
         
-        #Get specific letter and specific score in trial word
+        #Get specific letter and specific rag_score in trial word
         specific_letter=trial_word[i]
-        specific_score=score[i]
+        specific_score=rag_score[i]
         
         #If column score is green
         if specific_score=="Green":
             
-            #Set the column in "all_possible_letters" to one letter i.e. the specific letter
-            all_possible_letters[column]=specific_letter
+            #Set the column in "all_possible_letters_remaining" to one letter i.e. the specific letter
+            all_possible_letters_remaining[column]=specific_letter
             
-        #If column score is orange
-        elif specific_score=="Orange":
-            
-            #Remove letter from list of possible letters for that position, since an orange score indicates
-            #that the specific letter is not correct for that specific position
-            all_possible_letters[column].remove(specific_letter)
-            
-            #Check if this letter has previously appeared as an "orange" (i.e. in an earlier letter in the
-            #trial word)
-            #Note: we are working through the test word sequentially, and the same letter may appear two
-            #or more times as an orange letter. If this is the case, the analysis of the first orange letter
-            #is sufficient, so we skip the second (or higher) occurances
-            if specific_letter not in orange_letters.keys():
-                
-                #If the letter has not previously appeared in trial word as orange, then find the list
-                #of possible positions in true word, and record this in the "orange_letters" dictionary
-                orange_letters=add_letter_to_orange_letters(trial_word,
-                                                            specific_letter,
-                                                            orange_letters,
-                                                            red_or_orange_columns,
-                                                            i,
-                                                            score)
-            
-        #If red, remove letter from all columns in "all_possible_letters"
-        elif specific_score=="Red":
-            for column2 in all_possible_letters.keys():
-                if specific_letter in all_possible_letters[column2]:
-                    all_possible_letters[column2].remove(specific_letter)
+        #Increment i
+        i+=1
+    
+    #*****************#
+    #*** Check red ***#
+    #*****************#
+    
+    #Initialise i for counting
+    i=0
+    
+    #Loop through columns 1 to 5
+    for column in all_possible_letters_remaining.keys():
         
+        #Get specific letter and specific rag_score in trial word
+        specific_letter=trial_word[i]
+        specific_score=rag_score[i]
+        
+        #If column score is red
+        if specific_score=="Red":
+            
+            #Count how many times specific letter appears in word
+            n_occurences=trial_word.count(specific_letter)
+            
+            #If it appears only once, then we can be sure that it is not in the true word
+            if n_occurences==1:
+                
+                #And so we can remove it from all_possible_letters_remaining
+                #Note we use "col" here to avoid overwriting the "column" variable in the wider loop
+                for col in all_possible_letters_remaining.keys():
+                    if specific_letter in all_possible_letters_remaining[col]:
+                        all_possible_letters_remaining[col].remove(specific_letter)
+                    
+            #If letter appears more than once, we need to check if it's orange elsewhere
+            elif n_occurences>1:
+                
+                #Initialise variables
+                other_rag_scores=[]
+                
+                #Get RAG scores for other occurences
+                trial_word_as_list=[*trial_word]           #Copy trial word into list
+                trial_word_as_list[i]=""                   #Remove letter from current position
+                
+                #Loop through other letters
+                for ind in range(len(trial_word_as_list)):
+                    if trial_word_as_list[ind]==specific_letter:
+                        other_rag_scores.append(rag_score[ind])
+                        
+                #If none of the other rag scores are orange, we can remove the letter from everywhere
+                #Note we use "col" here to avoid overwriting the "column" variable in the wider loop
+                if "Orange" not in other_rag_scores:
+                    for col in all_possible_letters_remaining.keys():
+                        if specific_letter in all_possible_letters_remaining[col]:
+                            if len(all_possible_letters_remaining[col])>1:         #If len=1, then it means it's a green, so don't remove
+                                all_possible_letters_remaining[col].remove(specific_letter)
+                            
+                #If one or more of the other rag scores are orange, then we can only remove it from its current position
+                elif "Orange" in other_rag_scores:
+                    if specific_letter in all_possible_letters_remaining[column]:
+                        all_possible_letters_remaining[column].remove(specific_letter)
+            
+        #Increment i
+        i+=1
+        
+    #********************#
+    #*** Check orange ***#
+    #********************#
+    
+    #Initialise i for counting
+    i=0
+    
+    #Loop through columns 1 to 5
+    for column in all_possible_letters_remaining.keys():
+        
+        #Get specific letter and specific rag_score in trial word
+        specific_letter=trial_word[i]
+        specific_score=rag_score[i]
+        
+        #If column score is orange
+        if specific_score=="Orange":
+            
+            #Remove letter from current position
+            if specific_letter in all_possible_letters_remaining[column]:
+                all_possible_letters_remaining[column].remove(specific_letter)
+                
+            #The number of red, oranges and greens also gives information on the min and max number of
+            #possible occurences of a letter in a word. We calculate this in the next section.
+            
+            #We only need to do this once for each letter
+            if specific_letter not in orange_letters:
+            
+                #Record that letter is orange (including duplication)
+                orange_letters.append(specific_letter)
+
+                #Generate copy of trial word
+                trial_word_as_list=[*trial_word]           #Copy trial word into list
+                trial_word_as_list[i]=""                   #Remove letter from current position
+
+                #Loop through trial word, and get rag score for same specific letter
+                other_rag_scores=[]
+                for ind in range(len(trial_word_as_list)):
+                    if trial_word_as_list[ind]==specific_letter:
+                        other_rag_scores.append(rag_score[ind])
+
+                #Count number of greens, reds and oranges in other rag scores
+                n_greens=other_rag_scores.count("Green")
+                n_oranges=other_rag_scores.count("Orange")
+                n_reds=other_rag_scores.count("Red")
+
+                #Get minimum and maximum occurences of letter in word
+                #Note, this information is useful as it can help remove additional words from the available list
+
+                #The minimum possible number of occurences is given by 1 (for the fact that there's at least one
+                #occruance for the orange in the current position) + the number of orange elsewhere for the 
+                #same letter + the number of greens elsewhere for the same letter
+                min_occurences=1+n_oranges+n_greens
+
+                #The maximum number of occurences depends whether there is the same letter with a red score
+                if n_reds!=0:
+                    #If yes, then we know the max number of occurences is equal to the min number of occurences
+                    max_occurences=min_occurences
+                else:
+                    #If not, we don't know what the top end is, so set to 5
+                    max_occurences=5
+
+                #Save min and max occurences data
+                min_max_occurences[specific_letter]=[min_occurences,max_occurences]
+            
+            #But we still want to record duplicates for lower down
+            else:
+                
+                #Record that letter is orange (including duplication)
+                orange_letters.append(specific_letter)
+
         #Iterate up
         i+=1
         
-    #--- Cross check orange letters list with possible letters list ---#
-    #We now have a list of possible letters for each column, and a dictionary of orange letters with
-    #columns where these letters may appear in the true word. However, some of columns that are listed for
-    #specific letters in the "orange letters" dictionary may have already been ruled out by previous rounds
-    #in the solver, and so we cross-check the two lists to remove any positions in the orange_letters list
-    #that have already been ruled out. We could also use the orange letters dictionary to further reduce
-    #the possible letters list, but this has not been implemented yet.
-    all_possible_letters,orange_letters=cross_check_orange_letters(all_possible_letters,orange_letters)
-                
-    #Return list of remaining letters
-    return all_possible_letters, orange_letters
-
-#------------------------------------#
-#--- Add letter to orange letters ---#
-#------------------------------------#
-#The "orange_letters" dictionary is a dictionary where the keys are specific letters that are identified
-#as "orange" for the given trial word, and the values are a list of numbers that correspond to the columns
-#where the letter could possibly be. This function finds the values for a specific key, and adds it to the
-#dictionary.
-
-def add_letter_to_orange_letters(trial_word,specific_letter,orange_letters,red_or_orange_columns,i,score):
+    #********************************************************************#
+    #*** Check if any orange letters have only one available position ***#
+    #********************************************************************#
+    #After the above analysis, some orange letters may only have one available position
+    #If so, we want to collapse those positions down to one letter
     
-    #For the specific orange letter, record that it is a possible option for all columns that are either
-    #red or orange, but not for columns that are green, since those columns are already decided
-    orange_letters[specific_letter]=red_or_orange_columns.copy()
-
-    #Remove the current column from the list, as we know that the specific letter is not correct
-    #for the current column (otherwise it would be green...!)
-    orange_letters[specific_letter].remove(i)
-
-    #Check if the specific orange letter appears more than once in the trial word
-    if trial_word.count(specific_letter)>1:
-
-        #If the specific letter does appear more than once, find the colours and locations
-        #of the specific orange letter elsewhere in the word
-        locations_of_repeated_letters=[]
-        colours_of_repeat_letters=[]
-
-        #Iterate through all letters in trial word
-        for k in range(5):
-
-            #Get letter in trial word
-            letter_in_trial_word=trial_word[k]
-
-            #Check if letter in trial word is same as specific orange letter, and that the column is not same as
-            #current column for the specific orange letter
-            if (letter_in_trial_word==specific_letter and i!=k):
-                locations_of_repeated_letters.append(k)
-                colours_of_repeat_letters.append(score[k])
-
-        #If there is one or more repeated letter that is "Green"
-        if "Green" in colours_of_repeat_letters:
-            #Remove letter from orange letters dictionary, since the "Orange" in the current column is covered
-            #by the "Green" in the repeated column
-            orange_letters.pop(specific_letter) 
-
-        #If there is one or more repeated letters that is "Orange" or "Red"
-        elif ("Orange" in colours_of_repeat_letters or "Red" in colours_of_repeat_letters):
-
-            #Loop through repeated letters, and remove any locations from "orange_letters" list
-            #where the repeated letters are either "Orange" or "Red". Note: technically we should
-            #not need to do this for "Red", since the same letter should not appear as "Orange" and
-            #"Red" in the same set of scores, but included here for completeness/additional security.
-            count=0
-            for colour in colours_of_repeat_letters:
-                if (colour == "Orange" or colour == "Red"):
-
-                    #Get column number to remove from "orange_letters" list
-                    column_to_remove=locations_of_repeated_letters[count]
-
-                    #Remove column number from "orange_letters" list
-                    orange_letters[specific_letter].remove(column_to_remove)
-
-                #Add one to count
-                count+=1
-                
-    #Return orange letters dictionary
-    return orange_letters
-
-#----------------------------------#
-#--- Cross check orange letters ---#
-#----------------------------------#
-#We now have a list of possible letters for each column, and a dictionary of orange letters with
-#columns where these letters may appear in the true word. However, some of columns for the orange letters
-#may have already been ruled out by previous rounds in the solver, and so we cross-check the two lists
-#to remove any positions in the orange_letters list that have already been ruled out.
-
-def cross_check_orange_letters(all_possible_letters,orange_letters):
-
-    #Check if any of the orange letters have been removed from "all_possible_letters"
-    for letter in orange_letters.keys():
+    #Create list to keep track of orange letters that have been processed
+    orange_letters_done=[]
         
-        #Get columns associate with specific letter
-        columns=orange_letters[letter]
+    #Loop across all orange letters 
+    for specific_letter in orange_letters:
         
-        #Loop across all columns to check
-        for column_number in columns:
+        #Check specific letter hasnt been processed yet
+        if specific_letter not in orange_letters_done:
             
-            #Get column name for "all_possible_letters" column
-            column_name="column_"+str(column_number)
-            
-            #Check if orange letter is in possible letters for column
-            if letter not in all_possible_letters[column_name]:
-                
-                #If orange letter is not in possible letters for column, then delete from orange letters
-                orange_letters[letter].remove(column_number)
-                
-    #If any of the orange letters now only have one possible column, then set 
-    #that column in "all_possible_letters"
-    for letter in orange_letters.keys():
-        if len(orange_letters[letter])==1:
-            column_number=orange_letters[letter][0]
-            column_name="column_"+str(column_number)
-            all_possible_letters[column_name]=letter
-            
-    #Return updated
-    return all_possible_letters,orange_letters
+            #Record that we are processing this letter
+            orange_letters_done.append(specific_letter)
+        
+            #Count number of times the letter appears as orange
+            n_orange=orange_letters.count(specific_letter)
+
+            #Find number of occurences of letter in columns of remaining possible letters...
+            n_occurences=0
+            position=[]
+            rag_score_temp=[]
+            i=0
+
+            #...by serching through all columns
+            for col in all_possible_letters_remaining.keys():
+
+                #...and checking if letter is in column and column is not "Green"
+                if (specific_letter in all_possible_letters_remaining[col]) and (rag_score[i]!="Green"):
+                    n_occurences+=1    #...save occurence
+                    position.append(i) #...and save position
+
+                #Increment position count
+                i+=1
+
+            #If the number of occurences (i.e. number of possible columns where the letter could be) is equal to
+            #the number of oranges in the RAG score, then we know each of the possible positions must be this letter
+            if n_occurences==n_orange:
+
+                i=0
+                for col in all_possible_letters_remaining.keys():
+                    if i in position:
+                        all_possible_letters_remaining[col]=specific_letter
+                    i+=1
+    
+    #*********************#
+    #*** Return values ***#
+    #*********************#
+    
+    #Return list of remaining letters
+    return all_possible_letters_remaining, min_max_occurences

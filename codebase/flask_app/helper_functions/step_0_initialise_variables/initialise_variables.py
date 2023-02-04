@@ -27,5 +27,9 @@ def initialise_variables(all_words):
     #Initialise i for tracking number of loops
     i=0
     
+    #Initialise rank and brute force simple starting words to speed up loops
+    rank_start_word="caddy"
+    bfs_start_word="stare"
+    
     #Return variables
-    return all_words_remaining,n_words_remaining,all_possible_letters,i
+    return all_words_remaining,n_words_remaining,all_possible_letters,i,rank_start_word,bfs_start_word
