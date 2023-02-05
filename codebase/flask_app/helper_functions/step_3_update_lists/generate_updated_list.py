@@ -9,43 +9,17 @@
 #"red"), and based on this information, systematically removes words from the list of remaining
 #possible words
 
-#*** Algorithm steps ***#
-
-#These function generates the next guess through the following algorithm:
-#--- 1.Cycle through the RAG rating for each letter.
-#--- 2.If RAG score is "Green", reduce the list of possible letters for
-#    that column down to 1 letter i.e. the corresponding letter in the
-#    trial word.
-#--- 3.If RAG score is "Orange", find all other columns where the corresponding
-#    letter in the trial word could possibly appear in the actual word. This
-#    information is stored in a dictionary called "orange_letters", which is then
-#    used in subsequent functions to systematically remove words from the list of remaining
-#    possible words. This is by far the most complicated section of this algorithm,
-#    since a lot of information is contained in an "Orange" score, but is it is 
-#    more complex to extract and apply all of this information.
-#--- 3.If RAG score is "Red", remove this letter from all lists of possible letters.
-#--- 4.Based on the updated list of possible letters for each column, remove words
-#    from the list of possible words that are no longer possible solutions
-
-#*** Rationale for this algorithm***#
-
-#The RAG scores contain a lot of information about the position of possible letters,
-#which can then be used to systematically reduce down the number of possible words, which
-#in turn means the next guess is from an increasingly small list of words. The allows the
-#algorithm to reduce the list of possible words in an effective manner until only one
-#possible word is left - the actual word.
-
 #*** Ideas for modifications/extensions ***#
-# - We currently use the list of possible letters to further reduce down the orange letters
-#   dictionary, and we use both the list of possible letters and the orange letters dictionary
-#   to reduce the list of possible words, but we dont use the orange letters list to reduce
-#   down the list of possible letters. This could be used to further eliminate words from the
-#   list of possible words e.g. if there is perfect orange letter pair, whereby one letter
-#   can only occur in two positions, and a second (different) letter can only occur in two positions,
-#   and both sets of positions are the same, then we know that in those two positions, the list
-#   of possible letters is only 2 in length i.e. the two letters with matching possible positions.
-#   This is similar to common moves in sudoku, and can be further extended e.g. to three positions that have
-#   perfectly overlapping possible positions across three pairs of possible positions.
+# - Review list of remaining words, use this to remove additional letters from the
+#   lists of possible letters (e.g. if no word has the letter "j" in position 3, then
+#   this letter can be removed as an option. This might help further reduce down
+#   possible options for orange letters. It might be possible to do this recursively
+#   with the part of the code that reviews orange scores and possible options
+#   elsewhere
+# - Consider perfect pairs, triplets etc. of orange letters, similar to sudoku e.g.
+#   if one letter can only be in one of two possible positions, and a second different
+#   letter can only be in one of the same two possible positions, then we can collapse
+#   down the possible options to just these two letters
 
 #Imports
 import copy
@@ -53,8 +27,8 @@ import copy
 #---------------------------#
 #--- Get remaining words ---#
 #---------------------------#
-#This function takes 1) the list of possible letters in each word, and 2) the dictionary of orange
-#letters and their positions, and creates an updated list of possible words
+#This function takes 1) the list of possible letters for each position in the 5 letter word, and 2) the RAG scores
+#, and creates an updated list of possible words
 
 def get_remaining_words(all_words_remaining,all_possible_letters_remaining,rag_score,trial_word):
     
@@ -128,7 +102,7 @@ def get_remaining_words(all_words_remaining,all_possible_letters_remaining,rag_s
 #----------------------------#
 #This function generates two things based on the RAG score for the selected trial word :
 # 1) an updated dictionary of possible letters for each column ("all_possible_letters")
-# 2) an updated dictionary of letters and their possible positions in the true word ("orange_letters")
+# 2) a dictionary of letters and their minimum and maximum possible occurences in a word (orange letters only)
 
 def get_possible_letters(all_possible_letters_remaining,rag_score,trial_word):
     
