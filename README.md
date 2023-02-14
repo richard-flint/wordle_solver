@@ -34,7 +34,9 @@ These instructions will get you a copy of the project up and running on your loc
 * Run flask app: ```python flask_app.py```
 * View the app: Visit http://localhost:5000 in your browser to view the app
 
-### 
+## Current algorithm performance
+
+<iframe width="900" height="800" frameborder="0" scrolling="no" src="//plotly.com/~rflint/3.embed"></iframe>
 
 ## Authors
 Richard Flint, Marina Favaro
