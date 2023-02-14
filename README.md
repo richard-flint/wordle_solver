@@ -38,7 +38,6 @@ These instructions will get you a copy of the project up and running on your loc
 
 <div>
     <a href="https://plotly.com/~rflint/3/?share_key=FMp0JOi0ewwS36pYxuK805" target="_blank" title="test" style="display: block; text-align: center;"><img src="https://plotly.com/~rflint/3.png?share_key=FMp0JOi0ewwS36pYxuK805" alt="test" style="max-width: 100%;width: 600px;"  width="600" onerror="this.onerror=null;this.src='https://plotly.com/404.png';" /></a>
-    <script data-plotly="rflint:3" sharekey-plotly="FMp0JOi0ewwS36pYxuK805" src="https://plotly.com/embed.js" async></script>
 </div>
 
 ## Authors
