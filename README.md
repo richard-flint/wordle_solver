@@ -35,10 +35,22 @@ These instructions will get you a copy of the project up and running on your loc
 * View the app: Visit http://localhost:5000 in your browser to view the app
 
 ## Current algorithm performance
+The current highest-performing algorithm is called "Brute Force Simple". As noted above, this method finds the word that generates the shortest next list of remaining possible words.
+
+The basic performance across the entire dataset for "Brute Force Simple" is provided in the histogram below. The histogram illustrates the number of guesses required to find each word in the Wordle dataset. For all algorithms tested, the most common number of guesses needed to find a word is 4, but the number of guesses ranges from 1 to 9. In simple terms, a better algorithm will have a distribution that is shifted further to the left i.e. it takes fewer guesses to find more of the words in the dataset.
 
 <div>
-    <a href="https://plotly.com/~rflint/3/?share_key=FMp0JOi0ewwS36pYxuK805" target="_blank" title="test" style="display: block; text-align: center;"><img src="https://plotly.com/~rflint/3.png?share_key=FMp0JOi0ewwS36pYxuK805" alt="test" style="max-width: 100%;width: 600px;"  width="600" onerror="this.onerror=null;this.src='https://plotly.com/404.png';" /></a>
+    <a href="https://plotly.com/~rflint/5/?share_key=w2YKL9n4LjBk8slPmho0FC" target="_blank" title="wordle_histogram" style="display: block; text-align: center;"><img src="https://plotly.com/~rflint/5.png?share_key=w2YKL9n4LjBk8slPmho0FC" alt="wordle_histogram" style="max-width: 100%;width: 600px;"  width="600" onerror="this.onerror=null;this.src='https://plotly.com/404.png';" /></a>
 </div>
+
+The agregated performances of the algorithms can also be compared, for example using a box-and-whisker plot. The plot below illustrates the **mean, variance and range** for all three algorithms. *Note: this differs from the typical box-and-whisker plot, which usually shows the median, interquartile range and range.* The plot below shows that the "Brute Force Simple" algorithm has a lower mean and variance compared to the two other algorithms currently available, meaning "Brute Force Simple" takes fewer guesses on average to find a given Wordle word, and has less variability in its number of guesses.
+
+However, all three algorithms sometimes require more than 6 guesses to find certain Wordle words, with "Brute Force Simple" sometimes requiring up to 9 guesses to find certain words. This is illustrated below by the upper value of the whiskers (i.e. ranges). In the New York Times version of Wordle, users are only allowed up to 6 guesses to find a specific word, with 7 or more guesses registered as a failure. This means that all algorithms currently in this Wordle solver will sometimes fail, which is not ideal. This is a priority feature for future algorithms. Namely, developing algorithms that solve Worldle for all words in 6 or fewer guesses. 
+
+<div>
+    <a href="https://plotly.com/~rflint/11/?share_key=7bskfURZS5h5rhpZsorY3q" target="_blank" title="wordle_box_whisker_mean" style="display: block; text-align: center;"><img src="https://plotly.com/~rflint/11.png?share_key=7bskfURZS5h5rhpZsorY3q" alt="wordle_box_whisker_mean" style="max-width: 100%;width: 600px;"  width="600" onerror="this.onerror=null;this.src='https://plotly.com/404.png';" /></a>
+</div>
+
 
 ## Authors
 Richard Flint, Marina Favaro
