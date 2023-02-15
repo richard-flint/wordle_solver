@@ -51,6 +51,12 @@ However, all three algorithms sometimes require more than 6 guesses to find cert
     <a href="https://plotly.com/~rflint/11/?share_key=7bskfURZS5h5rhpZsorY3q" target="_blank" title="wordle_box_whisker_mean" style="display: block; text-align: center;"><img src="https://plotly.com/~rflint/11.png?share_key=7bskfURZS5h5rhpZsorY3q" alt="wordle_box_whisker_mean" style="max-width: 100%;width: 600px;"  width="600" onerror="this.onerror=null;this.src='https://plotly.com/404.png';" /></a>
 </div>
 
+We can also test if the differences between the above distributions are statistically significant, for example by using pairwise t-tests. 
+
+First Header  | Second Header  |  Brute Force Simple  |
+------------- | -------------  |  ------------------  |
+Content Cell  | Content Cell   |  9x10<sup>-64</sup>  |
+Content Cell  | Content Cell   |                      |
 
 ## Authors
 Richard Flint, Marina Favaro
