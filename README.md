@@ -53,10 +53,11 @@ However, all three algorithms sometimes require more than 6 guesses to find cert
 
 We can also test if the differences between the above distributions are statistically significant, for example by using pairwise t-tests. 
 
-First Header  | Second Header  |  Brute Force Simple  |
-------------- | -------------  |  ------------------  |
-Content Cell  | Content Cell   |  9x10<sup>-64</sup>  |
-Content Cell  | Content Cell   |                      |
+                    | Random                | Rank                  |  Brute Force Simple     |
+------------------- | --------------------- | --------------------  |  ---------------------  |
+Random              | /                     | 3.5x10<sup>-12</sup>  |  9x10<sup>-64</sup>     |
+Rank                | 3.5x10<sup>-12</sup>  | /                     |  2.2x10<sup>-124</sup>  |
+Brute Force Simple  | 9x10<sup>-64</sup>    | 2.2x10<sup>-124</sup> |  /                      |
 
 ## Authors
 Richard Flint, Marina Favaro
