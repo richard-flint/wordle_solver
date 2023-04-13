@@ -12,140 +12,115 @@ from helper_functions.step_0_initialise_variables import initialise_variables as
 from helper_functions.step_1_generate_next_trial_word import overall_generate_next_trial_word as stp1_0
 from helper_functions.step_2_generate_rag_score import generate_rag_score as stp2
 from helper_functions.step_3_update_lists import error_handling as stp3
+from helper_functions.other_helper_functions.wordle_classes import WordleRound
 
 #Import other modules
 import copy
 
-def find_word_python(all_words,true_word,next_word_selection,mode,rag_colours):
+def find_word_python(WordleGameParameters,true_word):
     
     #----------------------------#
     #--- Initialise variables ---#
     #----------------------------#
     
     #Initialise various variables for "find_word" function
-    all_words_remaining,n_words_remaining,all_possible_letters_remaining,count,rank_start_word,bfs_start_word=stp0.initialise_variables(all_words)
-    n_words=len(all_words)
-    error_flag=0 #Initialise error flag
+    all_possible_letters_remaining,rank_start_word,bfs_start_word=stp0.initialise_variables(WordleGameParameters.all_words)
     
-    #*******************************************************************************************************#
-    #Explaining key variables:
-    #--- "all_words_remaining" = list of all reamining possible words. Note: This list is reduced over time
-    #                            until there is just one word remaining
-    #--- "all_possible_letters_remaining" = a dictionary with five keys ("column_0" to "column_4") which
-    #                                       correspond to the 5 columns or spaces in a 5-letter wordle
-    #                                       word. Each key in the dictionary is initialised with all 26
-    #                                       letters of the alphabet, but this is reduced over time as
-    #                                       specific letters are ruled out for each column.
-    #*******************************************************************************************************#
+    #Initial WordleRound object for first round
+    ThisWordleRound=WordleRound(n_previous_guesses=0,
+                                previous_trial_word="N/A",
+                                previous_rag_score="N/A",
+                                n_words_remaining=WordleGameParameters.n_words,
+                                remaining_words=WordleGameParameters.all_words,
+                                remaining_letters=all_possible_letters_remaining,
+                                round_number=1,
+                                trial_word="TBD")
     
-    #Loop until there is only one possible remaining word
-    while n_words_remaining>1:
+    #---------------------------------#
+    #--- Generate first trial word ---#
+    #---------------------------------#
+    #No previous guess or rag score for generating first trial word, so easier to treat separately
+    
+    #If first iteration of brute force simple, it's quicker just to use manually generate the first word (which is the same every time)
+    if WordleGameParameters.method=="brute_force_simple" and bfs_start_word!="":
+        ThisWordleRound.trial_word=bfs_start_word
 
-        #------------------------------#
-        #--- Step 1: Generate guess ---#
-        #------------------------------#
+    #If first iteration of rank, it's quicker just to use manually generate the first word (which is the same every time)
+    elif WordleGameParameters.method=="rank" and rank_start_word!="":
+        ThisWordleRound.trial_word=rank_start_word
+
+    #Otherwise, generate next word as normal
+    else:
+        ThisWordleRound=stp1_0.generate_next_trial_word(WordleGameParameters,ThisWordleRound)
         
-        #If first iteration of brute force simple, it's quicker just to use manually generate the first word (which is the same every time)
-        if n_words_remaining==n_words and next_word_selection=="brute_force_simple" and bfs_start_word!="":
-            trial_word=bfs_start_word
+    #Save details from first round round
+    AllWordleRounds={"round_1":ThisWordleRound}
+    
+    #-------------------------#
+    #--- Loop until solved ---#
+    #-------------------------#
+    
+    #Loop until we get an all-"Green" RAG score
+    while ThisWordleRound.previous_rag_score!=["Green","Green","Green","Green","Green"]:
+        
+        #Note: Each round builds up to generating the next guess
+        
+        #--------------------------------------------------#
+        #--- Step 1: Create wordle class for this round ---#
+        #--------------------------------------------------#
+        ThisWordleRound=WordleRound(n_previous_guesses=ThisWordleRound.n_previous_guesses+1,
+                                    previous_trial_word=ThisWordleRound.trial_word,
+                                    previous_rag_score="TBD",
+                                    n_words_remaining=ThisWordleRound.n_words_remaining, #Copy in temporarily, to be updated below
+                                    remaining_words=ThisWordleRound.remaining_words, #Copy in temporarily, to be updated below
+                                    remaining_letters=ThisWordleRound.remaining_letters, #Copy in temporarily, to be updated below
+                                    round_number=ThisWordleRound.round_number+1,
+                                    trial_word="TBD")
+        
+        #--------------------------------------------------------#
+        #--- Step 2: Compare previous guess against true word ---#
+        #--------------------------------------------------------#
+        #This assigns "green", "amber" or "red" for each letter in the trial word compared to the true word
+        ThisWordleRound=stp2.check_letters_automatically(ThisWordleRound,true_word)
+        
+        
+        #---------------------------------#
+        #--- Step 3: Check if finished ---#
+        #---------------------------------#
+        #If we have an all-"Green" rag score, we can fill in the remaining detail for this round
+        #The loop will then exit
+        if ThisWordleRound.previous_rag_score==["Green","Green","Green","Green","Green"]:
+            ThisWordleRound.n_words_remaining=1
+            ThisWordleRound.remaining_words
+            ThisWordleRound.remaining_letters
+            ThisWordleRound.trial_word="N/A"
             
-        #If first iteration of rank, it's quicker just to use manually generate the first word (which is the same every time)
-        elif n_words_remaining==n_words and next_word_selection=="rank" and rank_start_word!="":
-            trial_word=rank_start_word
-        
-        #If there is an error flag, we don't want to re-generate a new random word
-        elif error_flag==1:
+            #Save details from this round
+            round_name="round_"+str(ThisWordleRound.round_number)
+            AllWordleRounds[round_name]=ThisWordleRound
             
-            #Reset error flag
-            error_flag=0
-        
-        #Otherwise, generate next word as normal
-        else:
-            trial_word=stp1_0.generate_next_trial_word(next_word_selection,
-                                                       all_words_remaining,
-                                                       n_words_remaining,
-                                                       all_possible_letters_remaining,
-                                                       mode)
+        #Only continue if we dont have an all-"Green" rag score
+        elif ThisWordleRound.previous_rag_score!=["Green","Green","Green","Green","Green"]:
 
-        #Check trial word
-        #If mode=="real_python" (i.e. we are running the wordle solver for real...
-        #...within a python interface), we need check the word selection is actually
-        #... accepted by the app, and then also print out the next word selection so
-        #...that the user can input this into their app.
-        if mode=="real_python":
+            #-----------------------------------------------------------------#
+            #--- Step 4: Generate updated list of remaining possible words ---#
+            #-----------------------------------------------------------------#
+
+            ThisWordleRound=stp3.get_remaining_words(ThisWordleRound)
+
+            #-----------------------------------#
+            #--- Step 5: Generate next guess ---#
+            #-----------------------------------#
             
-            print("\nThe next guess is: ",trial_word)
-            trial_word_check_flag=0
-            while trial_word_check_flag==0:
-                
-                #Check with users that trial word is accepted by the actual wordle app
-                input_string=f"Is this word accepted by the wordle app? [OPTIONS: Yes, No]"
-                trial_word_check=input(input_string).lower()[0] #Take just the first letter and make lowercase 
-                                                                #to account for different user inputs
-                
-                #If trial word is not accepted, we need to bin and get the next ebst trial word
-                if trial_word_check=="n":
-                    all_words_remaining.remove(trial_word)
-                    n_words_remaining=n_words_remaining-1
-                    trial_word=stp1_0.generate_next_trial_word(next_word_selection,
-                                                               all_words_remaining,
-                                                               n_words_remaining,
-                                                               all_possible_letters_remaining,
-                                                               mode)
-                
-                #If trial word is accepted, we move on
-                elif trial_word_check=="y":
-                    trial_word_check_flag=1
-                
-                else:
-                    print("\nInput error. Re-enter input.")
-            
+            #Generate next guess
+            ThisWordleRound=stp1_0.generate_next_trial_word(WordleGameParameters,ThisWordleRound)
 
-        #-----------------------------------------------#
-        #--- Step 2: Compare guess against true word ---#
-        #-----------------------------------------------#
-        #This assigns "green", "amber" or "red" for each letter in the trial word compared...
-        #...to the true word
+            #Save details from this round
+            round_name="round_"+str(ThisWordleRound.round_number)
+            AllWordleRounds[round_name]=ThisWordleRound
 
-        #If we are in "real_python" mode, this is done by the user
-        if mode=="real_python":
-            rag_colours=stp2.check_letters_manually()
-
-        #If we are not in "real_python" mode, this is done automatically
-        elif mode!="real_python":
-            rag_colours=stp2.check_letters_automatically(true_word,trial_word)
-
-        #-----------------------------------------------------------------#
-        #--- Step 3: Generate updated list of remaining possible words ---#
-        #-----------------------------------------------------------------#
-        
-        all_words_remaining,all_possible_letters_remaining,error_flag,error_message=stp3.get_remaining_words_with_error_handling(all_words_remaining,
-                                                                                                                                all_possible_letters_remaining,
-                                                                                                                                rag_colours,
-                                                                                                                                trial_word,
-                                                                                                                                mode)
-        if mode=="real_python":
-            print(error_message)
-
-        #-----------------------------------------#
-        #--- Step 4: Update tracking variables ---#
-        #-----------------------------------------#
-        
-        if error_flag!=1:
-            
-            #Get number of remaining words
-            n_words_remaining=len(all_words_remaining)
-        
-            #Add one to i for tracking number of loops
-            count+=1
-
-    #If the final RAG input was not [Green,Green,Green,Green,Green], we need to add one to the final count. This
-    #is because the final guess is not counted unless it is [Green,Green,Green,Green,Green].
-    if rag_colours!=["Green","Green","Green","Green","Green"]:
-        count+=1
-
-    #Return word once found
-    return all_words_remaining[0],count
+    #Return data once word is found
+    return ThisWordleRound.previous_trial_word,ThisWordleRound.n_previous_guesses
 
 #---------------------------------------------------------------------------------------------------#
 #---------------------------------------------------------------------------------------------------#
@@ -154,54 +129,50 @@ def find_word_python(all_words,true_word,next_word_selection,mode,rag_colours):
 #---------------------------------------------------------------------------------------------------#
 
 #Run wordle solver for flask app
-def find_word_flask(mode,next_word_selection,rag_colours,trial_word,all_words_remaining,n_words_remaining,all_possible_letters_remaining,remove_trial_word,rank_start_word,bfs_start_word):
+def find_word_flask(WordleGameParameters,ThisWordleRound):
     
-    #Initialise variables
+    #Initialise error flag
     error_flag=0
-    error_message=""
     
-    #For anything other than the first run, we first need to generate an updated list of possible words based on the previous trial word and the rag score
-    if rag_colours!="" and remove_trial_word=="no":
+    #------------------------------------#
+    #--- Step 0: Check if first round ---#
+    #------------------------------------#
     
-        #-----------------------------------------------------------------#
-        #--- Step 1: Generate updated list of remaining possible words ---#
-        #-----------------------------------------------------------------#
-        all_words_remaining,all_possible_letters_remaining,error_flag,error_message=stp3.get_remaining_words_with_error_handling(all_words_remaining,
-                                                                                                                            all_possible_letters_remaining,
-                                                                                                                            rag_colours,
-                                                                                                                            trial_word,
-                                                                                                                            mode)
+    #If first iteration of brute force simple, it's quicker just to use manually generate the first word (which is the same every time)
+    if WordleGameParameters.method=="brute_force_simple" and ThisWordleRound.round_number==1:
+        ThisWordleRound.trial_word=bfs_start_word
 
-        #-----------------------------------------#
-        #--- Step 2: Update tracking variables ---#
-        #-----------------------------------------#
-
-        #Get number of remaining words
-        if error_flag==0:
-            n_words_remaining=len(all_words_remaining)
+    #If first iteration of rank, it's quicker just to use manually generate the first word (which is the same every time)
+    elif WordleGameParameters.method=="rank" and ThisWordleRound.round_number==1:
+        ThisWordleRound.trial_word=rank_start_word
         
-    #-----------------------------------#
-    #--- Step 3: Generate next guess ---#
-    #-----------------------------------#
+    #If first iteration of rank, it's quicker just to use manually generate the first word (which is the same every time)
+    elif WordleGameParameters.method=="random" and ThisWordleRound.round_number==1:
+        ThisWordleRound=stp1_0.generate_next_trial_word(WordleGameParameters,ThisWordleRound)
     
-    #Only generate next guess if no error
-    if error_flag==0:
-    
-        #If first iteration of brute force simple, it's quicker just to use manually generate the first word (which is the same every time)
-        if rag_colours=="" and next_word_selection=="brute_force_simple" and bfs_start_word!="":
-            trial_word=bfs_start_word
-            
-        #If first iteration of rank, it's quicker just to use manually generate the first word (which is the same every time)
-        elif rag_colours=="" and next_word_selection=="rank" and rank_start_word!="":
-            trial_word=rank_start_word
+    #Otherwise, generate next word as normal
+    else:
+        
+        #-----------------------------------------------#
+        #--- Step 1: Save lists in case we get error ---#
+        #-----------------------------------------------#
+        remaining_letters_temp=ThisWordleRound.remaining_letters
+        remaining_words_temp=ThisWordleRound.remaining_words
+        n_remaining_words_temp=ThisWordleRound.n_words_remaining
+        
+        #-----------------------------------------------------------------#
+        #--- Step 2: Generate updated list of remaining possible words ---#
+        #-----------------------------------------------------------------#
 
-        #For everything else, both first guesses and next guess, we generate the next guess
-        else:
-            trial_word=stp1_0.generate_next_trial_word(next_word_selection,
-                                                       all_words_remaining,
-                                                       n_words_remaining,
-                                                       all_possible_letters_remaining,
-                                                       mode)
+        ThisWordleRound,error_flag=stp3.get_remaining_words_with_error_handling(WordleGameParameters,ThisWordleRound)
+        
+        #-----------------------------------#
+        #--- Step 3: Generate next guess ---#
+        #-----------------------------------#
+        
+        #If no error, then generate next guess
+        if error_flag==0:
+            ThisWordleRound=stp1_0.generate_next_trial_word(WordleGameParameters,ThisWordleRound)
     
     #Return results
-    return trial_word,all_words_remaining,n_words_remaining,all_possible_letters_remaining,error_flag,error_message
+    return ThisWordleRound,error_flag

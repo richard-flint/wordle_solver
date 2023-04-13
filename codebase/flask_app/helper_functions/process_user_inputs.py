@@ -24,6 +24,12 @@ from progressbar import progressbar
 #Import user defined modules
 from helper_functions.find_word import find_word_python
 from helper_functions.other_helper_functions import other_helper_functions as oth
+from helper_functions.other_helper_functions.wordle_classes import WordleGame
+
+
+#----------------------------------#
+#--- Classes for saving results ---#
+#----------------------------------#
 
 #Define classes for saving results
 class WordleResultsOneWord:
@@ -45,42 +51,29 @@ class WordleResultsManyWords:
         self.n_guesses_all_words = n_guesses_all_words
         self.t_solve_all_words = t_solve_all_words
         self.basic_stats = basic_stats
+        
+#---------------------------#
+#--- Process user inputs ---#
+#---------------------------#
+#Note: This is for hte testing pipeline
 
-def run_wordle_solver(mode,next_word_selection,rag_colours):
+def run_wordle_solver(mode,method):
 
     #------------------------------#
     #--- Initial pre_processing ---#
     #------------------------------#
 
     #Get list of all 5 letter words
-    #all_words,n_words=oth.get_all_five_letter_words(english_words_lower_alpha_set)
     all_words,n_words=oth.import_wordle_word_list()
     
-    #Initialise dictionary for saving results if doesn't already exist
-    if "n_guesses_dict" not in locals():
-        n_guesses_dict=dict()
-    
-    #----------------------------------#
-    #--- Run for real wordle puzzle ---#
-    #----------------------------------#
-
-    if mode == "real_python":
-        
-        #Input dummy true word (as we don't know the true word for this mode)
-        true_word="unknown"
-        
-        #Find word using wordle solver
-        guess_word,n_guesses=find_word_python(all_words,true_word,next_word_selection,mode,rag_colours)
-        
-        #Output statistics
-        print("\nThe word is: ", guess_word)
-        print("Number of guesses: ",n_guesses)
+    #Create instance of WordleGameParameters
+    WordleGameParameters=WordleGame(all_words,n_words,method,mode)
         
     #------------------------#
     #--- Run for one word ---#
     #------------------------#
 
-    elif mode == "one_word":
+    if WordleGameParameters.mode == "one_word":
 
         #Start timer
         start_time = time.time()
@@ -92,7 +85,7 @@ def run_wordle_solver(mode,next_word_selection,rag_colours):
         check_time = time.time()
 
         #Find word using wordle solver
-        guess_word,n_guesses=find_word_python(all_words,true_word,next_word_selection,mode,rag_colours)
+        guess_word,n_guesses=find_word_python(WordleGameParameters,true_word)
 
         #End timer
         end_time = time.time()
@@ -121,7 +114,7 @@ def run_wordle_solver(mode,next_word_selection,rag_colours):
     #----------------------------------#
 
     #Check whether we are running shorter version (i.e. 100 words) or full version (i.e. all_words)
-    elif (mode == "100_words" or mode == "all_words"):
+    elif (WordleGameParameters.mode == "100_words" or WordleGameParameters.mode == "all_words"):
 
         #*** Find words ***#
 
@@ -145,7 +138,7 @@ def run_wordle_solver(mode,next_word_selection,rag_colours):
             true_word=words_to_test[ind]
 
             #Get final guess for specific word
-            guess_word,n_guesses=find_word_python(all_words,true_word,next_word_selection,mode,rag_colours)
+            guess_word,n_guesses=find_word_python(WordleGameParameters,true_word)
 
             #Check that guess word is the same as the true word
             if guess_word!=true_word:
@@ -187,4 +180,4 @@ def run_wordle_solver(mode,next_word_selection,rag_colours):
 
     #Catch if user has incorrectly selected the model
     else:
-        print('Error! You must select either: "real_python, "one_word", "100_words" or "all_words"')
+        print('Error! You must select either: "one_word", "100_words" or "all_words"')

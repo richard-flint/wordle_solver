@@ -30,17 +30,27 @@ import copy
 #This function takes 1) the list of possible letters for each position in the 5 letter word, and 2) the RAG scores
 #, and creates an updated list of possible words
 
-def get_remaining_words(all_words_remaining,all_possible_letters_remaining,rag_score,trial_word):
+def get_remaining_words(ThisWordleRound):
     
-    #Get possible letters for each column
-    all_possible_letters_remaining,min_max_occurences=get_possible_letters(all_possible_letters_remaining,rag_score,trial_word)
+    #-----------------------------#
+    #--- Get remaining letters ---#
+    #-----------------------------#
+    
+    #Get possible letters for each column from rag score
+    ThisWordleRound.remaining_letters,min_max_occurences=get_possible_letters(ThisWordleRound.remaining_letters,
+                                                                              ThisWordleRound.previous_rag_score,
+                                                                              ThisWordleRound.previous_trial_word)
+    
+    #--------------------------------------#
+    #--- Remove invalid words from list ---#
+    #--------------------------------------#
     
     #Create copy of all_words list so we can delete words
     #without affecting loop that includes all_words_remaining
-    all_words_remaining_updated=all_words_remaining.copy()
+    all_words_remaining_updated=ThisWordleRound.remaining_words.copy()
     
     #Cycle through all words in list of remaining possible words
-    for word in all_words_remaining:
+    for word in ThisWordleRound.remaining_words:
         
         #Initialise delete word flag with inital value of FALSE, which by default does not remove a word
         delete_word_flag=False
@@ -54,10 +64,10 @@ def get_remaining_words(all_words_remaining,all_possible_letters_remaining,rag_s
             test_letter=word[i]
             
             #Get column name for "all_possible_letters_remaining" dictionary
-            column_name=list(all_possible_letters_remaining.keys())[i]
+            column_name=list(ThisWordleRound.remaining_letters.keys())[i]
             
             #Get list of possible letters for given column
-            possible_letters_one_column=all_possible_letters_remaining[column_name]
+            possible_letters_one_column=ThisWordleRound.remaining_letters[column_name]
             
             #Check if test letter is in list of possible letters for column
             check = test_letter in possible_letters_one_column
@@ -70,19 +80,22 @@ def get_remaining_words(all_words_remaining,all_possible_letters_remaining,rag_s
                 
         #*** Check word fulfills max min occurences criteria ***#
         
-        #For each letter in the max min occurences dictionary
-        for specific_letter in min_max_occurences.keys():
-            
-            #Count number of  occurences of specific letter in word
-            n_occurences=word.count(specific_letter)
-            
-            #Check if n_occurences is between maximum and minimum value
-            min_possible_occurences=min_max_occurences[specific_letter][0]
-            max_possible_occurences=min_max_occurences[specific_letter][1]
-            if (n_occurences<min_possible_occurences) or (n_occurences>max_possible_occurences):
-                
-                #If not, set delete word flag
-                delete_word_flag=True
+        #Only worth checking if word has not been deleted in previous check
+        if delete_word_flag==False:
+        
+            #For each letter in the max min occurences dictionary
+            for specific_letter in min_max_occurences.keys():
+
+                #Count number of  occurences of specific letter in word
+                n_occurences=word.count(specific_letter)
+
+                #Check if n_occurences is between maximum and minimum value
+                min_possible_occurences=min_max_occurences[specific_letter][0]
+                max_possible_occurences=min_max_occurences[specific_letter][1]
+                if (n_occurences<min_possible_occurences) or (n_occurences>max_possible_occurences):
+
+                    #If not, set delete word flag
+                    delete_word_flag=True
                 
         #*** Delete word ***#
                 
@@ -94,8 +107,12 @@ def get_remaining_words(all_words_remaining,all_possible_letters_remaining,rag_s
     #*** Return ***#
     #**************#
     
-    #Return remaining lists after looping through all words
-    return all_words_remaining_updated,all_possible_letters_remaining
+    #Update values in TheWordleRound object
+    ThisWordleRound.remaining_words=all_words_remaining_updated
+    ThisWordleRound.n_words_remaining=len(all_words_remaining_updated)
+    
+    #Return object
+    return ThisWordleRound
 
 #----------------------------#
 #--- Get possible letters ---#

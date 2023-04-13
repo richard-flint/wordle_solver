@@ -80,53 +80,50 @@ from progressbar import progressbar
 #Import function from parallel folders
 from helper_functions.step_2_generate_rag_score import generate_rag_score as stp2
 from helper_functions.step_3_update_lists import generate_updated_list as stp3
+from helper_functions.other_helper_functions.wordle_classes import WordleRound
 
 #Define function
-def generate_word_using_brute_force(version,all_words_remaining,n_words_remaining,all_possible_letters_remaining,mode):
-    
-    #Define numeric score for RAG scores (note: this is only used in the "simple" version
+def generate_word_using_brute_force(WordleGameParameters,ThisWordleRound):
+        
+    #Define numeric score for RAG scores (note: this is only used in the "simple" version)
     red_score=1
     orange_score=2
     green_score=3
     
     #Create matrix for storing scores
-    all_numeric_scores=np.zeros([n_words_remaining,n_words_remaining])
+    all_numeric_scores=np.zeros([ThisWordleRound.n_words_remaining,ThisWordleRound.n_words_remaining])
     
     #Loop through all remaining words as possible actual words
     #i.e. we assume in turn that each remaining word is the actual word
     #Note we are using progress bar to track here and provide an ETA, especially
     #for the extended version, since the algorithm is very slow!
-    if mode=="one_word":
+    if WordleGameParameters.mode=="one_word":
         
         #Run with progress bar when just doing one word
-        for i in progressbar(range(n_words_remaining)):
+        for i in progressbar(range(ThisWordleRound.n_words_remaining)):
             
             #Get actual word
-            actual_word=all_words_remaining[i]
+            actual_word=ThisWordleRound.remaining_words[i]
             
             #Run brute force calculate on specific actual word
-            all_numeric_scores=brute_force_main(version,all_words_remaining,n_words_remaining,
-                               all_possible_letters_remaining,actual_word,
-                               green_score,orange_score,red_score,all_numeric_scores,i)
+            all_numeric_scores=brute_force_main(WordleGameParameters,ThisWordleRound,green_score,orange_score,red_score,all_numeric_scores,i,actual_word)
         
     else:
         
         #Run without progress bar when doing multiple words, as clashes with progress bar elsewhere
-        for i in range(n_words_remaining):
+        for i in range(ThisWordleRound.n_words_remaining):
             
             #Get actual word
-            actual_word=all_words_remaining[i]
+            actual_word=ThisWordleRound.remaining_words[i]
             
             #Run brute force calculate on specific actual word
-            all_numeric_scores=brute_force_main(version,all_words_remaining,n_words_remaining,
-                               all_possible_letters_remaining,actual_word,
-                               green_score,orange_score,red_score,all_numeric_scores,i)
+            all_numeric_scores=brute_force_main(WordleGameParameters,ThisWordleRound,green_score,orange_score,red_score,all_numeric_scores,i,actual_word)
                 
     #Get average score for each trial word (column) across all actual words
     all_trial_words_average_scores=all_numeric_scores.mean(0)
     
     #If we are doing the simple brute force approach, we want the highest scoring trial word
-    if version=="brute_force_simple":
+    if WordleGameParameters.method=="brute_force_simple":
     
         #Find location of max scoring value
         location=np.argmax(all_trial_words_average_scores)
@@ -134,29 +131,32 @@ def generate_word_using_brute_force(version,all_words_remaining,n_words_remainin
     #If we are using the extended brute force approach, we want the lowest scoring trial word,
     #since we want the trial word that on average produces the shortest list of possible
     #remaining words
-    elif version == "brute_force_extended":
+    elif WordleGameParameters.method == "brute_force_extended":
         
         #Find min scoring value
         location=np.argmin(all_trial_words_average_scores)
     
     #Find actual word in this location
-    next_trial_word=all_words_remaining[location]
+    ThisWordleRound.trial_word=ThisWordleRound.remaining_words[location]
     
     #Return selected word
-    return next_trial_word
+    return ThisWordleRound
 
 #**********************************************#
 #*** Run main part of brute force algorithm ***#
 #**********************************************#
-def brute_force_main(version,all_words_remaining,n_words_remaining,
-                     all_possible_letters_remaining,actual_word,
-                     green_score,orange_score,red_score,all_numeric_scores,i):
+def brute_force_main(WordleGameParameters,ThisWordleRound,green_score,orange_score,red_score,all_numeric_scores,i,actual_word):
     
+    #Save previous trial word and rag score in wordle object to restore at end
+    #Note: We need to do this to use the check_letters_automatically function on different trial words
+    real_trial_word=ThisWordleRound.previous_trial_word
+    real_previous_rag_score=ThisWordleRound.previous_rag_score
+        
     #Loop through all words as possible test words
-    for j in range(n_words_remaining):
+    for j in range(ThisWordleRound.n_words_remaining):
 
         #Get trial word
-        trial_word=all_words_remaining[j]
+        trial_word=ThisWordleRound.remaining_words[j]
         
         #Check if trial word and actual word are the same. If so, skip.
         if actual_word!=trial_word:
@@ -165,15 +165,16 @@ def brute_force_main(version,all_words_remaining,n_words_remaining,
             numeric_score=0
 
             #Generate rag score for trial word
-            rag_score=stp2.check_letters_automatically(actual_word,trial_word)
+            ThisWordleRound.previous_trial_word=trial_word
+            ThisWordleRound=stp2.check_letters_automatically(ThisWordleRound,actual_word)
 
             #*** Brute force simple ***#
 
             #If we are doing the simple brute force approach
-            if version=="brute_force_simple":
+            if WordleGameParameters.method=="brute_force_simple":
 
                 #Assign numeric score for each qualitative rag score
-                for score in rag_score:
+                for score in ThisWordleRound.previous_rag_score:
                     if score=="Red":
                         numeric_score+=red_score
                     elif score=="Orange":
@@ -184,23 +185,30 @@ def brute_force_main(version,all_words_remaining,n_words_remaining,
             #*** Brute force extended ***#
 
             #If we are using the extended brute force approach
-            elif version == "brute_force_extended":
+            elif WordleGameParameters.method == "brute_force_extended":
 
                 #Create a copy of key lists and dictionaries so that we don't change values in global version
-                all_words_remaining_temp=copy.deepcopy(all_words_remaining)
-                all_possible_letters_remaining_temp=copy.deepcopy(all_possible_letters_remaining)
+                ThisWordleRoundTemp=WordleRound(n_previous_guesses=ThisWordleRound.n_previous_guesses,
+                                                previous_trial_word=ThisWordleRound.previous_trial_word,
+                                                previous_rag_score=ThisWordleRound.previous_rag_score,
+                                                n_words_remaining=ThisWordleRound.n_words_remaining,
+                                                remaining_words=ThisWordleRound.remaining_words,
+                                                remaining_letters=copy.deepcopy(ThisWordleRound.remaining_letters),
+                                                round_number=ThisWordleRound.round_number,
+                                                trial_word=ThisWordleRound.trial_word)
 
                 #For the given trial word and actual word, get list of remaining words
-                all_words_remaining_temp_updated,all_possible_letters_remaining_temp_updated=stp3.get_remaining_words(all_words_remaining_temp,
-                                                                                                                      all_possible_letters_remaining_temp,
-                                                                                                                      rag_score,
-                                                                                                                      trial_word)
+                ThisWordleRoundTemp=stp3.get_remaining_words(ThisWordleRoundTemp)
 
                 #Get number of remaining words
-                numeric_score=len(all_words_remaining_temp_updated)
+                numeric_score=ThisWordleRoundTemp.n_words_remaining
 
             #Save score to matrix
             all_numeric_scores[i,j]=numeric_score
+            
+    #Restore true previous trial word and rag score in object
+    ThisWordleRound.previous_trial_word=real_trial_word
+    ThisWordleRound.previous_rag_score=real_previous_rag_score
     
     #Return values
     return all_numeric_scores

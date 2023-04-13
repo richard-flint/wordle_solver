@@ -14,16 +14,13 @@
 #Import libraries
 import random
 
-def generate_random_trial_word(all_words_remaining):
-    
-    #Get number of words
-    n_words=len(all_words_remaining)
+def generate_random_trial_word(ThisWordleRound):
     
     #Generate random number in range
-    random_number=random.randint(0,n_words-1)
+    random_number=random.randint(0,ThisWordleRound.n_words_remaining-1)
     
     #Get trial word
-    trial_word=all_words_remaining[random_number]
+    ThisWordleRound.trial_word=ThisWordleRound.remaining_words[random_number]
     
     #Return word
-    return trial_word
+    return ThisWordleRound

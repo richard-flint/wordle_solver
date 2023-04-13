@@ -3,3 +3,5 @@ readme_images/*
 instructions_deployment.txt
 to_do.txt
 codebase/flask_app/misc/performance_screenshots.pptx
+codebase/experimentation/
+codebase/experimentation/*

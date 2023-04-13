@@ -14,7 +14,7 @@
 #The function returns a list of words that correspond to five 
 #RAG ratings, one for each letter
 
-def check_letters_automatically(true_word,trial_word):
+def check_letters_automatically(ThisWordleRound,true_word):
 
     #Initialise score list
     true_word_letters=[]
@@ -24,7 +24,7 @@ def check_letters_automatically(true_word,trial_word):
     #Get lists of letters
     for i in range(5):
         true_word_letters.append(true_word[i])
-        trial_word_letters.append(trial_word[i])
+        trial_word_letters.append(ThisWordleRound.previous_trial_word[i])
 
     #Initialise variables
     all_scores=["Red"]*5 #RAG score list
@@ -67,7 +67,8 @@ def check_letters_automatically(true_word,trial_word):
             true_word_letters[position_in_true_word]=""
 
     #Return final value
-    return all_scores
+    ThisWordleRound.previous_rag_score=all_scores
+    return ThisWordleRound
 
 def check_letters_manually():
 

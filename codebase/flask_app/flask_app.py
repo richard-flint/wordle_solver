@@ -13,13 +13,13 @@
 #---------------#
 
 from flask import Flask, request, render_template, jsonify, redirect, url_for
-#from english_words import english_words_set
-#from english_words import english_words_lower_alpha_set
 import copy
 
 from helper_functions.find_word import find_word_flask
 from helper_functions.other_helper_functions import other_helper_functions as oth
 from helper_functions.step_0_initialise_variables import initialise_variables as stp0
+from helper_functions.other_helper_functions.wordle_classes import WordleGame
+from helper_functions.other_helper_functions.wordle_classes import WordleRound
 
 #-----------------------#
 #--- Start flask app ---#
@@ -31,11 +31,13 @@ app.config["DEBUG"] = True
 #-----------------------------------#
 #--- Initialise global variables ---#
 #-----------------------------------#
-#For speed of development, we'll use global variables, but would potentially be better to use a backend SQL database
+#For speed of development, we'll use global variables, but would potentially be better to use a backend database
 
 #Get list of all 5 letter words
-#all_words,n_words=oth.get_all_five_letter_words(english_words_lower_alpha_set)
 all_words,n_words=oth.import_wordle_word_list()
+
+#Create dictionary for storing all rounds
+AllWordleRounds={}
 
 #------------------------#
 #--- Page 0: Homepage ---#
@@ -43,7 +45,11 @@ all_words,n_words=oth.import_wordle_word_list()
 
 @app.route("/", methods=["GET", "POST"])
 @app.route("/home/<reset>", methods=["GET", "POST"])
-def wordle_homepage(reset="yes"):  
+def wordle_homepage(reset="yes"):  #Default value is "yes" if no value provided
+    
+    #Define global variables
+    global WordleGameParameters, ThisWordleRound, AllWordleRounds
+    global rank_start_word,bfs_start_word
     
     #------------------------------#
     #--- Check if (re-)starting ---#
@@ -55,11 +61,14 @@ def wordle_homepage(reset="yes"):
         #...just set error message
         error_message=""
         
+        #And clear AllWordleRounds variable
+        AllWordleRounds={}
+        
         #...and display homepage at bottom of function
         
     #--------------------#
     #--- Check method ---#
-    #-------------------#
+    #--------------------#
     
     #Otherwise, if not restarting, check user input
     elif reset=="no":
@@ -80,51 +89,51 @@ def wordle_homepage(reset="yes"):
 
             #...and display homepage at bottom of function
 
+        #------------------#
+        #--- Start game ---#
+        #------------------#
+        
         #If method is in accepted list
         elif method in accepted_methods:
+            
+            #Create instance of WordleGameParameters
+            mode="real_flask"
+            WordleGameParameters=WordleGame(all_words,n_words,method,mode)
             
             #----------------------------#
             #--- Get first trial word ---#
             #----------------------------#
 
-            #Ensure relevant variables are global
-            global all_words,n_words
-            global all_words_remaining,n_words_remaining,all_possible_letters_remaining,count,rank_start_word,bfs_start_word
-            global next_word_selection
-            global rag_colours,previous_rag_colours
-            global trial_word,previous_trial_word
+            #Initialise variables
+            all_possible_letters_remaining,rank_start_word,bfs_start_word=stp0.initialise_variables(all_words)
+            
+            #Initialise WordleRound object for first round
+            ThisWordleRound=WordleRound(n_previous_guesses=0,
+                                        previous_trial_word="N/A",
+                                        previous_rag_score="N/A",
+                                        n_words_remaining=WordleGameParameters.n_words,
+                                        remaining_words=WordleGameParameters.all_words,
+                                        remaining_letters=all_possible_letters_remaining,
+                                        round_number=1,
+                                        trial_word="TBD")
 
-            #Initialise global variables
-            all_words_remaining,n_words_remaining,all_possible_letters_remaining,count,rank_start_word,bfs_start_word=stp0.initialise_variables(all_words)
-            next_word_selection=""
-            remove_trial_word="no"
-            rag_colours=""
-            previous_rag_colours=""
-            trial_word=""
-            previous_trial_word=""
-
-            #Initialise local variables
-            mode="real_flask"
-            next_word_selection=method
-
-            #Get trial word
-            trial_word,all_words_remaining,n_words_remaining,all_possible_letters_remaining,error_flag,error_message=find_word_flask(mode,
-                                                                                                            next_word_selection,
-                                                                                                            rag_colours,
-                                                                                                            trial_word,
-                                                                                                            all_words_remaining,
-                                                                                                            n_words_remaining,
-                                                                                                            all_possible_letters_remaining,
-                                                                                                            remove_trial_word,
-                                                                                                            rank_start_word,
-                                                                                                            bfs_start_word)
+            #Get first trial word
+            if WordleGameParameters.method=="rank":
+                ThisWordleRound.trial_word=rank_start_word
+            elif WordleGameParameters.method=="brute_force_simple":
+                ThisWordleRound.trial_word=bfs_start_word
+            else:
+                ThisWordleRound,error_flag=find_word_flask(WordleGameParameters,ThisWordleRound)
+                
+            #Store wordle round
+            AllWordleRounds["ThisWordleRound1"]=ThisWordleRound
 
             #Redirect to rag score page
             return redirect("/find_word/no", code=301)
         
-    #----------------------#
+    #-----------------#
     #--- Otherwise ---#
-    #----------------------#
+    #-----------------#
     
     #And if all else fails...
     else:
@@ -145,121 +154,120 @@ def wordle_homepage(reset="yes"):
 def wordle_solver(remove_trial_word="no"):
     
     #Ensure relevant variables are global
-    global all_words,n_words
-    global all_words_remaining,n_words_remaining,all_possible_letters_remaining,count,rank_start_word,bfs_start_word
-    global next_word_selection
-    global rag_colours,previous_rag_colours
-    global trial_word,previous_trial_word
+    global WordleGameParameters,ThisWordleRound,AllWordleRounds
+    global rank_start_word,bfs_start_word
     
     #Initialise variables
     error_message = "" #Initialise error string for printing error if needed
     accepted_colours=["Green","Orange","Red"] #Initialise list for checking input
     possible_words="All words currently available."
+    error_flag=0
+    
+    #--------------------------------------------#
+    #--- Create updated object if first guess ---#
+    #--------------------------------------------#
+    #After the first guess, we have no RAG score, so it is different
+    if ThisWordleRound.round_number==1:
+        
+        #Create new object for next wordle round
+        ThisWordleRound=WordleRound(n_previous_guesses=ThisWordleRound.n_previous_guesses+1,
+                                    previous_trial_word=ThisWordleRound.trial_word,
+                                    previous_rag_score="TBD",
+                                    n_words_remaining=ThisWordleRound.n_words_remaining, #Copy in temporarily, to be updated in next round
+                                    remaining_words=ThisWordleRound.remaining_words, #Copy in temporarily, to be updated in next round
+                                    remaining_letters=ThisWordleRound.remaining_letters, #Copy in temporarily, to be updated in next round
+                                    round_number=ThisWordleRound.round_number+1,
+                                    trial_word=ThisWordleRound.trial_word) #Copy in temporarily, to be updated in next round
+        
+        
     
     #-----------------------------------------#
     #--- Remove trial word if not accepted ---#
     #-----------------------------------------#
     
     #Check if trial word is accepted. If not we need to bin it and get the next best word
-    if remove_trial_word=="yes" and n_words_remaining>1:
+    elif remove_trial_word=="yes" and ThisWordleRound.n_words_remaining>1:
         
-        #Check if trial word is first word for brute force
-        if trial_word=="erase": #"aerie" is currently the first word in the brute force method
-        
-            #Do not remove word, and add error message
-            error_message="'erase' is definitely accepted by the Wordle app! Try inputting it again."
-            
-        #Check if trial word is first word for rank method
-        elif trial_word=="caddy": #"caddy" is currently the first word in the rank
-        
-            #Do not remove word, and add error message
-            error_message="'caddy' is definitely accepted by the Wordle app! Try inputting it again."
-            
-        #Otherwise, continue to remove word    
+        #Check if we're round one. If we are, then we don't allow word removal
+        #Note: This would be theoretcally possible, but would be slow for slower algorithms.
+        if ThisWordleRound.round_number==2:
+            error_message="This starting word is definitely allowed! Please input the RAG score for this word and generate the next trial word."
+
         else:
-
             #Remove trial word from list
-            all_words_remaining.remove(trial_word)
-            n_words_remaining=n_words_remaining-1
+            ThisWordleRound.remaining_words.remove(ThisWordleRound.previous_trial_word)
+            ThisWordleRound.n_words_remaining=ThisWordleRound.n_words_remaining-1
+
+            #Get previous trial word and rag score
+            name="ThisWordleRound"+str(ThisWordleRound.round_number-1)
+            ThisWordleRound.previous_trial_word=AllWordleRounds[name].previous_trial_word
+            ThisWordleRound.previous_rag_score=AllWordleRounds[name].previous_rag_score
 
             #Get next trial word
-            mode="real_flask"
-            trial_word=previous_trial_word
-            rag_colours=previous_rag_colours
-            trial_word,all_words_remaining,n_words_remaining,all_possible_letters_remaining,error_flag,error_message=find_word_flask(mode,
-                                                                                                            next_word_selection,
-                                                                                                            rag_colours,
-                                                                                                            trial_word,
-                                                                                                            all_words_remaining,
-                                                                                                            n_words_remaining,
-                                                                                                            all_possible_letters_remaining,
-                                                                                                            remove_trial_word,
-                                                                                                            rank_start_word,
-                                                                                                            bfs_start_word)
-            
+            ThisWordleRound,error_flag=find_word_flask(WordleGameParameters,ThisWordleRound)
+
+            #Create new object for next
+            ThisWordleRound=WordleRound(n_previous_guesses=ThisWordleRound.n_previous_guesses, #We dont update the n. guesses as we have only dropped a word
+                                            previous_trial_word=ThisWordleRound.trial_word,
+                                            previous_rag_score="TBD",
+                                            n_words_remaining=ThisWordleRound.n_words_remaining, #Copy in temporarily, to be updated in next round
+                                            remaining_words=ThisWordleRound.remaining_words, #Copy in temporarily, to be updated in next round
+                                            remaining_letters=ThisWordleRound.remaining_letters, #Copy in temporarily, to be updated in next round
+                                            round_number=ThisWordleRound.round_number, #We dont update the round number as we have only dropped a word
+                                            trial_word=ThisWordleRound.trial_word) #Copy in temporarily, to be updated in next round
+
+
             #Get remaining possible words as string
-            possible_words=get_possible_words_as_string(all_words_remaining)
+            possible_words=get_possible_words_as_string(ThisWordleRound)
     
-    #-------------------------------------------------#
-    #--- Process user input if we have rag colours ---#
-    #-------------------------------------------------#
-    elif remove_trial_word=="no" and rag_colours!="" and n_words_remaining>1:
+    #--------------------------#
+    #--- Process user input ---#
+    #--------------------------#
+    elif remove_trial_word=="no" and ThisWordleRound.n_words_remaining>1 and ThisWordleRound.n_previous_guesses>0:
         
-        #Check that variables are accepted
-        input_flag=0
-        for colour in rag_colours:
-            if colour not in accepted_colours:
-                input_flag=1
+        #---------------------------#
+        #--- Get next trial word ---#
+        #---------------------------#
+
+        #Save RAG colours into wordle round object
+        global rag_colours
+        ThisWordleRound.previous_rag_score=rag_colours
+
+        #Get next trial word
+        ThisWordleRound,error_flag=find_word_flask(WordleGameParameters,ThisWordleRound)
+
+        #If we have an error
+        if error_flag==1:
+            
+            #Print error message, and make no update to wordle object
+            #Note: wordle object remains unchanged by "find_word_flask" object if there is an error
+            error_message="This input produces no remaining possible words. Please try again."
         
-        #If one or more variables are not accepted, output error
-        if input_flag==1:
-            error_message = "At least one input is not accepted. Try again.\n"
-        
-        #Else, get next word and update global variables
-        elif input_flag==0:
+        #Else if we dont have an error flag, save output and create updated object for next round
+        elif error_flag==0:
             
-            #---------------------------#
-            #--- Get next trial word ---#
-            #---------------------------#
+            #Save wordle round
+            name="ThisWordleRound"+str(ThisWordleRound.round_number)
+            AllWordleRounds[name]=ThisWordleRound
             
-            #Temporary save previous trial word and rag score before generating new trial word
-            previous_trial_word_temp=trial_word
-            previous_rag_colours_temp=rag_colours
-            
-            #Get next trial word
-            mode="real_flask"
-            trial_word,all_words_remaining,n_words_remaining,all_possible_letters_remaining,error_flag,error_message=find_word_flask(mode,
-                                                                                                            next_word_selection,
-                                                                                                            rag_colours,
-                                                                                                            trial_word,
-                                                                                                            all_words_remaining,
-                                                                                                            n_words_remaining,
-                                                                                                            all_possible_letters_remaining,
-                                                                                                            remove_trial_word,
-                                                                                                            rank_start_word,
-                                                                                                            bfs_start_word)
-            
-            #If we have an error
-            if error_flag==1:
-                
-                #We don't reset the previous trial word and rag score
-                previous_trial_word_temp=None
-                previous_rag_colours_temp=None
-                
-            #Else if there's no error, we can safely move on
-            elif error_flag==0:
-                previous_trial_word=previous_trial_word_temp
-                previous_rag_colours=previous_rag_colours_temp
-                
-            #Get remaining possible words as string
-            possible_words=get_possible_words_as_string(all_words_remaining)
+            #Generate next worde round
+            ThisWordleRound=WordleRound(n_previous_guesses=ThisWordleRound.n_previous_guesses+1,
+                                        previous_trial_word=ThisWordleRound.trial_word,
+                                        previous_rag_score="TBD",
+                                        n_words_remaining=ThisWordleRound.n_words_remaining, #Copy in temporarily, to be updated in next round
+                                        remaining_words=ThisWordleRound.remaining_words, #Copy in temporarily, to be updated in next round
+                                        remaining_letters=ThisWordleRound.remaining_letters, #Copy in temporarily, to be updated in next round
+                                        round_number=ThisWordleRound.round_number+1,
+                                        trial_word=ThisWordleRound.trial_word) #Copy in temporarily, to be updated in next round
+
+        #Get remaining possible words as string
+        possible_words=get_possible_words_as_string(ThisWordleRound)
             
     #Else, if we just have one word remaining
-    elif n_words_remaining==1:
+    elif ThisWordleRound.n_words_remaining==1:
         
         #Set error message for trying to find more words
         error_message="There are no more words left...you have found the word! To re-start, press 'Reset wordle solver'"
-        possible_words=trial_word
             
     #----------------------#
     #--- Output webpage ---#
@@ -272,12 +280,12 @@ def wordle_solver(remove_trial_word="no"):
     return render_template('rag_input_page.html',
                            error_message=error_message,
                            possible_words=possible_words,
-                           trial_word=trial_word,
-                           n_words_remaining=n_words_remaining)
+                           trial_word=ThisWordleRound.trial_word,
+                           n_words_remaining=ThisWordleRound.n_words_remaining)
 
-def get_possible_words_as_string(all_words_remaining):
-    possible_words=all_words_remaining[0]
-    for word in all_words_remaining[1:]:
+def get_possible_words_as_string(ThisWordleRound):
+    possible_words=ThisWordleRound.remaining_words[0]
+    for word in ThisWordleRound.remaining_words[1:]:
             possible_words=possible_words+", "+word
     return possible_words
 
@@ -298,7 +306,6 @@ def store_colors():
                  tile_colour_mapping(data['tile3']),
                  tile_colour_mapping(data['tile4']),
                  tile_colour_mapping(data['tile5'])]
-    print("it me, richard, just storing some colours")
     return jsonify({"message": "Colors stored successfully!"})
 
 if __name__ == '__main__':

@@ -38,9 +38,7 @@
 import numpy as np
 
 #Define function
-def generate_word_from_most_frequent_remaining_letters(all_words_remaining,
-                                                       n_words_remaining,
-                                                       all_possible_letters_remaining):
+def generate_word_from_most_frequent_remaining_letters(ThisWordleRound):
     
     #Initialise alphabet list                
     alphabet=list(["a","b","c","d","e","f","g",
@@ -52,10 +50,10 @@ def generate_word_from_most_frequent_remaining_letters(all_words_remaining,
     letter_count_all_letters_all_columns=np.zeros([len(alphabet),5])
     
     #Create matrix of letters for all words remaining
-    all_words_remaining_as_letter_matrix=np.zeros([n_words_remaining,5],dtype="U1")
-    for i in range(n_words_remaining):
+    all_words_remaining_as_letter_matrix=np.zeros([ThisWordleRound.n_words_remaining,5],dtype="U1")
+    for i in range(ThisWordleRound.n_words_remaining):
         for j in range(5):
-            word=all_words_remaining[i]
+            word=ThisWordleRound.remaining_words[i]
             all_words_remaining_as_letter_matrix[i,j]=word[j]
 
     #--- For each column in the remaining list of words, calculate the occurance of each letter ---#
@@ -83,10 +81,10 @@ def generate_word_from_most_frequent_remaining_letters(all_words_remaining,
 
     #Find rank of each letter in each word
     for j in range(5):
-        for i in range(n_words_remaining):
+        for i in range(ThisWordleRound.n_words_remaining):
 
             #Get letter in word
-            letter=all_words_remaining[i][j]
+            letter=ThisWordleRound.remaining_words[i][j]
 
             #Find position of letter in alphabet
             letter_position= (np.array(alphabet)==letter)
@@ -104,12 +102,15 @@ def generate_word_from_most_frequent_remaining_letters(all_words_remaining,
     max_score=max(score_each_word)
 
     #Find position of max scoring word
-    for i in range(n_words_remaining):
+    for i in range(ThisWordleRound.n_words_remaining):
         if score_each_word[i]==max_score:
             max_score_position=i
 
     #Find max scoring word
-    max_score_word=all_words_remaining[max_score_position]
+    max_score_word=ThisWordleRound.remaining_words[max_score_position]
+    
+    #Set trial word as max scoring word
+    ThisWordleRound.trial_word=max_score_word
     
     #Return max scoring word
-    return max_score_word
+    return ThisWordleRound
