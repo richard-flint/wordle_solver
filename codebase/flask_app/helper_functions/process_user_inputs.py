@@ -12,8 +12,6 @@
 #--- Import packages and functions ---#
 #-------------------------------------#
 
-from english_words import english_words_set
-from english_words import english_words_lower_alpha_set
 import numpy as np
 import random
 import plotly.graph_objects as go
@@ -47,10 +45,12 @@ class WordleResultsOneWord:
 class WordleResultsManyWords:
     
     #Object-specific attributes
-    def __init__(self, n_guesses_all_words,t_solve_all_words,basic_stats):
+    def __init__(self, n_guesses_all_words,t_solve_all_words,basic_stats,errors_all_words,n_errors):
         self.n_guesses_all_words = n_guesses_all_words
         self.t_solve_all_words = t_solve_all_words
         self.basic_stats = basic_stats
+        self.errors_all_words=errors_all_words
+        self.n_errors=n_errors
         
 #---------------------------#
 #--- Process user inputs ---#
@@ -85,7 +85,7 @@ def run_wordle_solver(mode,method):
         check_time = time.time()
 
         #Find word using wordle solver
-        guess_word,n_guesses=find_word_python(WordleGameParameters,true_word)
+        guess_word,n_guesses,error=find_word_python(WordleGameParameters,true_word)
 
         #End timer
         end_time = time.time()
@@ -102,6 +102,7 @@ def run_wordle_solver(mode,method):
         print("The final guess is: ", guess_word)
         print("The actual word is: ",true_word)
         print("Number of guesses: ",n_guesses)
+        print("Error returned: ",error)
         print("Time taken to solve: ",round(time_to_solve,5),"s")
         print("Estimated time to run on 100 words: ",round(total_time_estimate_100_words,0),"s, or ",round(total_time_estimate_100_words/60,2)," minutes")
         print("Estimated time to run on all words: ",round(total_time_estimate_all_words,0),"s, or ",
@@ -118,8 +119,10 @@ def run_wordle_solver(mode,method):
 
         #*** Find words ***#
 
-        #Initialise list for recording number of guesses
+        #Initialise list for recording number of guesses and any errors
         n_guesses_all_words=[]
+        errors_all_words=[]
+        n_errors=0
 
         #Define number of words to test
         if mode == "100_words":
@@ -138,7 +141,7 @@ def run_wordle_solver(mode,method):
             true_word=words_to_test[ind]
 
             #Get final guess for specific word
-            guess_word,n_guesses=find_word_python(WordleGameParameters,true_word)
+            guess_word,n_guesses,error=find_word_python(WordleGameParameters,true_word)
 
             #Check that guess word is the same as the true word
             if guess_word!=true_word:
@@ -148,8 +151,10 @@ def run_wordle_solver(mode,method):
                 #Note that this would suggest a fault in the algorithm, since all algorithms
                 #should eventually find the correct answer.
 
-            #Save number of guesses
+            #Save number of guesses and number of errors
             n_guesses_all_words.append(n_guesses)
+            errors_all_words.append(error)
+            n_errors+=error
 
             #Record and print interation
             #print("Progress: ",ind,"/",n_words_to_test,end="\r")
@@ -173,7 +178,7 @@ def run_wordle_solver(mode,method):
         fig.show()
         
         #Save results
-        wordle_results = WordleResultsManyWords(n_guesses_all_words,time_to_solve,basic_stats)
+        wordle_results = WordleResultsManyWords(n_guesses_all_words,time_to_solve,basic_stats,errors_all_words,n_errors)
         
         #Return saved results
         return wordle_results

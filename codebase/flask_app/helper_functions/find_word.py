@@ -3,15 +3,12 @@
 #------------------------------------- Find word ---------------------------------------#
 #---------------------------------------------------------------------------------------#
 #---------------------------------------------------------------------------------------#
-#This is a high level algorithm for finding the "true word" in a wordle puzzle
-#It breaks the problem down into four main steps, each of which calls one or more additional
-#user defined functions.
 
 #Import user defined functions
-from helper_functions.step_0_initialise_variables import initialise_variables as stp0
-from helper_functions.step_1_generate_next_trial_word import overall_generate_next_trial_word as stp1_0
-from helper_functions.step_2_generate_rag_score import generate_rag_score as stp2
-from helper_functions.step_3_update_lists import error_handling as stp3
+from helper_functions.initialise_variables import initialise_variables as stp0
+from helper_functions.generate_next_trial_word import overall_generate_next_trial_word as stp1_0
+from helper_functions.generate_rag_score import generate_rag_score as stp2
+from helper_functions.update_lists import error_handling as stp3
 from helper_functions.other_helper_functions.wordle_classes import WordleRound
 
 #Import other modules
@@ -34,7 +31,12 @@ def find_word_python(WordleGameParameters,true_word):
                                 remaining_words=WordleGameParameters.all_words,
                                 remaining_letters=all_possible_letters_remaining,
                                 round_number=1,
-                                trial_word="TBD")
+                                trial_word="TBD",
+                                error=0,
+                                error_message="None")
+    
+    #Initialise AllWordleRounds dictionary for saving each round
+    AllWordleRounds={}
     
     #---------------------------------#
     #--- Generate first trial word ---#
@@ -51,7 +53,7 @@ def find_word_python(WordleGameParameters,true_word):
 
     #Otherwise, generate next word as normal
     else:
-        ThisWordleRound=stp1_0.generate_next_trial_word(WordleGameParameters,ThisWordleRound)
+        ThisWordleRound=stp1_0.generate_next_trial_word(WordleGameParameters,ThisWordleRound,AllWordleRounds)
         
     #Save details from first round round
     AllWordleRounds={"round_1":ThisWordleRound}
@@ -60,8 +62,11 @@ def find_word_python(WordleGameParameters,true_word):
     #--- Loop until solved ---#
     #-------------------------#
     
-    #Loop until we get an all-"Green" RAG score
-    while ThisWordleRound.previous_rag_score!=["Green","Green","Green","Green","Green"]:
+    #Initialise counting variable to allow up to a certain amount of guesses
+    count=1
+    
+    #Loop until we get an all-"Green" RAG score (or we get an error, or we have too many guesses)
+    while ThisWordleRound.previous_rag_score!=["Green","Green","Green","Green","Green"] and ThisWordleRound.error==0 and count<20:
         
         #Note: Each round builds up to generating the next guess
         
@@ -75,11 +80,16 @@ def find_word_python(WordleGameParameters,true_word):
                                     remaining_words=ThisWordleRound.remaining_words, #Copy in temporarily, to be updated below
                                     remaining_letters=ThisWordleRound.remaining_letters, #Copy in temporarily, to be updated below
                                     round_number=ThisWordleRound.round_number+1,
-                                    trial_word="TBD")
+                                    trial_word="TBD",
+                                    error=0,
+                                    error_message="None")
         
         #--------------------------------------------------------#
         #--- Step 2: Compare previous guess against true word ---#
         #--------------------------------------------------------#
+        
+        print(ThisWordleRound.previous_trial_word)
+        
         #This assigns "green", "amber" or "red" for each letter in the trial word compared to the true word
         ThisWordleRound=stp2.check_letters_automatically(ThisWordleRound,true_word)
         
@@ -106,21 +116,40 @@ def find_word_python(WordleGameParameters,true_word):
             #--- Step 4: Generate updated list of remaining possible words ---#
             #-----------------------------------------------------------------#
 
-            ThisWordleRound=stp3.get_remaining_words(ThisWordleRound)
+            ThisWordleRound,error_flag=stp3.get_remaining_words_with_error_handling(WordleGameParameters,ThisWordleRound)
 
             #-----------------------------------#
             #--- Step 5: Generate next guess ---#
             #-----------------------------------#
             
             #Generate next guess
-            ThisWordleRound=stp1_0.generate_next_trial_word(WordleGameParameters,ThisWordleRound)
+            ThisWordleRound=stp1_0.generate_next_trial_word(WordleGameParameters,ThisWordleRound,AllWordleRounds)
 
             #Save details from this round
             round_name="round_"+str(ThisWordleRound.round_number)
             AllWordleRounds[round_name]=ThisWordleRound
+            
+            #Add to count to monitor number of guesses
+            count+=1
+    
+    #-------------------------#
+    #--- Return final data ---#
+    #-------------------------#
 
-    #Return data once word is found
-    return ThisWordleRound.previous_trial_word,ThisWordleRound.n_previous_guesses
+    #Return final word
+    final_guess=ThisWordleRound.previous_trial_word
+    
+    #If we have had fewer than 20 guesses, then we should have found the word
+    if count<20:
+        n_guesses=ThisWordleRound.n_previous_guesses
+        error=ThisWordleRound.error
+        
+    #If we've had 20 guesses and still not found the word, record an error
+    if count==20:
+        n_guesses=100
+        error=1
+        
+    return final_guess,n_guesses,error
 
 #---------------------------------------------------------------------------------------------------#
 #---------------------------------------------------------------------------------------------------#
@@ -133,6 +162,9 @@ def find_word_flask(WordleGameParameters,ThisWordleRound):
     
     #Initialise error flag
     error_flag=0
+    
+    #Initialise AllWordleRounds dictionary for saving each round
+    AllWordleRounds={} #Note: not currently used here, for now.
     
     #------------------------------------#
     #--- Step 0: Check if first round ---#
@@ -148,7 +180,7 @@ def find_word_flask(WordleGameParameters,ThisWordleRound):
         
     #If first iteration of rank, it's quicker just to use manually generate the first word (which is the same every time)
     elif WordleGameParameters.method=="random" and ThisWordleRound.round_number==1:
-        ThisWordleRound=stp1_0.generate_next_trial_word(WordleGameParameters,ThisWordleRound)
+        ThisWordleRound=stp1_0.generate_next_trial_word(WordleGameParameters,ThisWordleRound,AllWordleRounds)
     
     #Otherwise, generate next word as normal
     else:
@@ -172,7 +204,7 @@ def find_word_flask(WordleGameParameters,ThisWordleRound):
         
         #If no error, then generate next guess
         if error_flag==0:
-            ThisWordleRound=stp1_0.generate_next_trial_word(WordleGameParameters,ThisWordleRound)
+            ThisWordleRound=stp1_0.generate_next_trial_word(WordleGameParameters,ThisWordleRound,AllWordleRounds)
     
     #Return results
     return ThisWordleRound,error_flag

@@ -17,7 +17,7 @@ import copy
 
 from helper_functions.find_word import find_word_flask
 from helper_functions.other_helper_functions import other_helper_functions as oth
-from helper_functions.step_0_initialise_variables import initialise_variables as stp0
+from helper_functions.initialise_variables import initialise_variables as stp0
 from helper_functions.other_helper_functions.wordle_classes import WordleGame
 from helper_functions.other_helper_functions.wordle_classes import WordleRound
 
@@ -80,9 +80,19 @@ def wordle_homepage(reset="yes"):  #Default value is "yes" if no value provided
 
         #Get input for method variable
         method = request.form["methodinput"].lower()
+        
+        #If method is ChatGPT, output specific error message
+        if method=="chatgpt":
+            
+            #Provide specific error message
+            #error_message = "The ChatGPT method is not currently available on the web app because of the cost of using the API. However, you can try this method yourself by cloning the GitHub repository and using your own API key." 
+            
+            error_message = "" #Blank actually also still looks better for now
 
-        #Check that method variable is from accepted list
-        if method not in accepted_methods:
+            #...and display homepage at bottom of function
+            
+        #Otherwise, check that method variable is from accepted list
+        elif method not in accepted_methods:
 
             #If not, create output message...
             error_message = "" #Blank actually looks better for now
@@ -115,7 +125,9 @@ def wordle_homepage(reset="yes"):  #Default value is "yes" if no value provided
                                         remaining_words=WordleGameParameters.all_words,
                                         remaining_letters=all_possible_letters_remaining,
                                         round_number=1,
-                                        trial_word="TBD")
+                                        trial_word="TBD",
+                                        error=0,
+                                        error_message="")
 
             #Get first trial word
             if WordleGameParameters.method=="rank":
@@ -177,7 +189,9 @@ def wordle_solver(remove_trial_word="no"):
                                     remaining_words=ThisWordleRound.remaining_words, #Copy in temporarily, to be updated in next round
                                     remaining_letters=ThisWordleRound.remaining_letters, #Copy in temporarily, to be updated in next round
                                     round_number=ThisWordleRound.round_number+1,
-                                    trial_word=ThisWordleRound.trial_word) #Copy in temporarily, to be updated in next round
+                                    trial_word=ThisWordleRound.trial_word, #Copy in temporarily, to be updated in next round
+                                    error=0,
+                                    error_message="")
         
         
     
@@ -214,7 +228,9 @@ def wordle_solver(remove_trial_word="no"):
                                             remaining_words=ThisWordleRound.remaining_words, #Copy in temporarily, to be updated in next round
                                             remaining_letters=ThisWordleRound.remaining_letters, #Copy in temporarily, to be updated in next round
                                             round_number=ThisWordleRound.round_number, #We dont update the round number as we have only dropped a word
-                                            trial_word=ThisWordleRound.trial_word) #Copy in temporarily, to be updated in next round
+                                            trial_word=ThisWordleRound.trial_word, #Copy in temporarily, to be updated in next round
+                                            error=0,
+                                            error_message="")
 
 
             #Get remaining possible words as string
@@ -258,7 +274,9 @@ def wordle_solver(remove_trial_word="no"):
                                         remaining_words=ThisWordleRound.remaining_words, #Copy in temporarily, to be updated in next round
                                         remaining_letters=ThisWordleRound.remaining_letters, #Copy in temporarily, to be updated in next round
                                         round_number=ThisWordleRound.round_number+1,
-                                        trial_word=ThisWordleRound.trial_word) #Copy in temporarily, to be updated in next round
+                                        trial_word=ThisWordleRound.trial_word, #Copy in temporarily, to be updated in next round
+                                        error=0,
+                                        error_message="")
 
         #Get remaining possible words as string
         possible_words=get_possible_words_as_string(ThisWordleRound)

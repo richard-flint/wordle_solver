@@ -14,12 +14,12 @@
 			<option value="random">Random</option>
 			<option value="rank">Rank</option>
 			<option value="brute_force_simple">Brute Force Simple</option>
+			<option value="chatgpt">ChatGPT</option>
 		</select>
 		<div class="form">
 			<input type="submit" class="btn btn-success" value="Get first trial word" /></p>
 		</div>
 		<p id="definition">
-		</p>
 	</form>
 	<p>{{error_message}}</p>
 </div>
@@ -33,6 +33,8 @@
 			document.getElementById('definition').innerHTML = 'This method involves randomly generating combinations of letters to find a valid word.';
 		} else if (method === 'rank') {
 			document.getElementById('definition').innerHTML = 'This method involves ranking combinations of letters based on how common they are in the English language and trying the most common combinations first.';
+		} else if (method === 'chatgpt') {
+			document.getElementById('definition').innerHTML = 'This method uses the ChatGPT API (specifically, GPT-3.5-Turbo) to solve Wordle. <b>Note that this method is not currently available in this web app</b> because of the cost of using the API, but you can try this method yourself by cloning the GitHub repository.';
 		} else if (method === 'select_algorithm') {
 			document.getElementById('definition').innerHTML = '';
 		}
