@@ -266,7 +266,6 @@ python-utils==3.3.3
 pytz==2022.7
 PyVirtualDisplay==3.0
 PyWavelets==1.4.1
-pywin32==305.1
 pywin32-ctypes==0.2.0
 pywinpty==2.0.2
 PyYAML==6.0
