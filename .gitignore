@@ -8,3 +8,8 @@ archive/
 archive/*
 venv/
 venv/*
+.ipynb_checkpoints
+__pycache__
+tutorials/
+tutorials/*
+flask_app/test_data/*
