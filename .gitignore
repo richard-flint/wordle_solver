@@ -7,3 +7,14 @@ codebase/experimentation/
 codebase/experimentation/*
 codebase/archive/
 codebase/archive/*
+codebase/myvenv/etc/
+codebase/myvenv/etc/*
+codebase/myvenv/Include/
+codebase/myvenv/Include/*
+codebase/myvenv/Lib/
+codebase/myvenv/Lib/*
+codebase/myvenv/Scripts/
+codebase/myvenv/Scripts/*
+codebase/myvenv/share/
+codebase/myvenv/share/*
+codebase/myvenv/pyvenv.cfg
