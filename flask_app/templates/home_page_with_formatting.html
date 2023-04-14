@@ -1,0 +1,45 @@
+<html>
+<head>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+<div class="container">
+	<h1>Wordle Solver</h1>
+	<form method="post" action="/home/no">
+		<select name="methodinput" id="methodinput">
+			<option value="select_algorithm">Select algorithm...</option>
+			<option value="random">Random</option>
+			<option value="rank">Rank</option>
+			<option value="brute_force_simple">Brute Force Simple</option>
+			<option value="chatgpt">ChatGPT</option>
+		</select>
+		<div class="form">
+			<input type="submit" class="btn btn-success" value="Get first trial word" /></p>
+		</div>
+		<p id="definition">
+	</form>
+	<p>{{error_message}}</p>
+	<p>Link to <a href="https://github.com/richard-flint/wordle_solver" target="_blank">GitHub repository</a></p>
+</div>
+
+<script>
+	document.getElementById('methodinput').addEventListener('change', function() {
+		var method = this.value;
+		if (method === 'brute_force_simple') {
+			document.getElementById('definition').innerHTML = 'This method involves trying all possible combinations of letters to find a valid word.';
+		} else if (method === 'random') {
+			document.getElementById('definition').innerHTML = 'This method involves randomly generating combinations of letters to find a valid word.';
+		} else if (method === 'rank') {
+			document.getElementById('definition').innerHTML = 'This method involves ranking combinations of letters based on how common they are in the English language and trying the most common combinations first.';
+		} else if (method === 'chatgpt') {
+			document.getElementById('definition').innerHTML = 'This method uses the ChatGPT API (specifically, GPT-3.5-Turbo) to solve Wordle. <b>Note that this method is not currently available in this web app</b> because of the cost of using the API, but you can try this method yourself by cloning the GitHub repository.';
+		} else if (method === 'select_algorithm') {
+			document.getElementById('definition').innerHTML = '';
+		}
+	});
+		
+</script>
+</body>
