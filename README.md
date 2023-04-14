@@ -1,4 +1,4 @@
-# Wordle Solver (Flask App)
+# Wordle Solver
 This is a simple web application that helps users solve the New York Times's daily [Wordle puzzle](https://www.nytimes.com/games/wordle/).
 
 **Note: This app is under active development. This includes both the backend algorithms that "solve" the Wordle puzzle, and the frontend user interface. The current version of the app should nonetheless work if installed as instructed below. Current areas of development include:**
