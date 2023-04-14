@@ -6,5 +6,5 @@ experimentation/
 experimentation/*
 archive/
 archive/*
-myvenv/
-myvenv/*
+venv/
+venv/*
