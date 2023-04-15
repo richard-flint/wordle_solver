@@ -13,3 +13,4 @@ __pycache__
 tutorials/
 tutorials/*
 flask_app/test_data/*
+openai_api_key_real
