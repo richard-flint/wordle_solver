@@ -12,7 +12,7 @@
 #--- Imports ---#
 #---------------#
 
-from flask import Flask, request, render_template, jsonify, redirect, url_for
+from flask import Flask, request, render_template, jsonify, redirect, url_for, session
 import copy
 
 from helper_functions.find_word import find_word_flask
@@ -48,7 +48,6 @@ AllWordleRounds={}
 def wordle_homepage(reset="yes"):  #Default value is "yes" if no value provided
     
     #Define global variables
-    global WordleGameParameters, ThisWordleRound, AllWordleRounds
     global rank_start_word,bfs_start_word
     
     #------------------------------#
@@ -139,6 +138,11 @@ def wordle_homepage(reset="yes"):  #Default value is "yes" if no value provided
                 
             #Store wordle round
             AllWordleRounds["ThisWordleRound1"]=ThisWordleRound
+            
+            #Store objects as session objects so they are available on the next page
+            session['WordleGameParameters'] = WordleGameParameters
+            session['ThisWordleRound'] = ThisWordleRound
+            session['AllWordleRounds'] = AllWordleRounds
 
             #Redirect to rag score page
             return redirect("/find_word/no", code=301)
@@ -165,8 +169,12 @@ def wordle_homepage(reset="yes"):  #Default value is "yes" if no value provided
 @app.route("/find_word/<remove_trial_word>", methods=["GET", "POST"])
 def wordle_solver(remove_trial_word="no"):
     
+    #Retreive session objects
+    WordleGameParameters = session.get('WordleGameParameters', None)
+    ThisWordleRound = session.get('ThisWordleRound', None)
+    AllWordleRounds = session.get('AllWordleRounds', None)
+    
     #Ensure relevant variables are global
-    global WordleGameParameters,ThisWordleRound,AllWordleRounds
     global rank_start_word,bfs_start_word
     
     #Initialise variables
