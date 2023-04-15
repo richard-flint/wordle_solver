@@ -11,6 +11,7 @@ import numpy as np
 import pandas as pd
 import random
 import csv 
+import os
 
 #-----------------------------------------------#
 #--- Generate initial list of 5 letter words ---#
@@ -80,8 +81,14 @@ def get_all_five_letter_words(all_words_original_set):
 
 def import_wordle_word_list():
     
+    #Get path
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    
+    # Construct the path to the CSV file
+    csv_path = os.path.join(current_dir, '..', '..', 'data', 'full_word_lists', 'original_wordle_list.csv')
+    
     #Import data from csv file
-    csv_path=r'data/full_word_lists/original_wordle_list.csv'
+    #csv_path=r'data/full_word_lists/original_wordle_list.csv'
     df = pd.read_csv(csv_path)
     
     #Convert to list
