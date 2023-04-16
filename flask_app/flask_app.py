@@ -13,6 +13,8 @@
 #---------------#
 
 from flask import Flask, request, render_template, jsonify, redirect, url_for, session
+from flask_session import Session
+
 import copy
 
 from helper_functions.find_word import find_word_flask
@@ -27,17 +29,9 @@ from helper_functions.other_helper_functions.wordle_classes import WordleRound
 
 app = Flask(__name__)
 app.config["DEBUG"] = True
-
-#-----------------------------------#
-#--- Initialise global variables ---#
-#-----------------------------------#
-#For speed of development, we'll use global variables, but would potentially be better to use a backend database
-
-#Get list of all 5 letter words
-all_words,n_words=oth.import_wordle_word_list()
-
-#Create dictionary for storing all rounds
-AllWordleRounds={}
+app.secret_key = 'your_secret_key_here'
+app.config['SESSION_TYPE'] = 'filesystem'  # Or use 'redis' if you have Redis set up
+Session(app)
 
 #------------------------#
 #--- Page 0: Homepage ---#
@@ -47,21 +41,14 @@ AllWordleRounds={}
 @app.route("/home/<reset>", methods=["GET", "POST"])
 def wordle_homepage(reset="yes"):  #Default value is "yes" if no value provided
     
-    #Define global variables
-    global rank_start_word,bfs_start_word
-    
-    #------------------------------#
-    #--- Check if (re-)starting ---#
-    #------------------------------#
+    #Get list of all 5 letter words
+    all_words,n_words=oth.import_wordle_word_list()
     
     #If we just starting or ressting...
-    if reset=="yes":
+    if reset=="yes" or "reset" not in locals():
     
         #...just set error message
         error_message=""
-        
-        #And clear AllWordleRounds variable
-        AllWordleRounds={}
         
         #...and display homepage at bottom of function
         
@@ -135,17 +122,17 @@ def wordle_homepage(reset="yes"):  #Default value is "yes" if no value provided
                 ThisWordleRound.trial_word=bfs_start_word
             else:
                 ThisWordleRound,error_flag=find_word_flask(WordleGameParameters,ThisWordleRound)
-                
-            #Store wordle round
-            AllWordleRounds["ThisWordleRound1"]=ThisWordleRound
+            
+            #Convert objects to dictionary so that they can then be stored as session objects
+            WordleGameParametersDict=wordle_game_to_dict(WordleGameParameters)
+            ThisWordleRoundDict=wordle_round_to_dict(ThisWordleRound)
             
             #Store objects as session objects so they are available on the next page
-            session['WordleGameParameters'] = WordleGameParameters
-            session['ThisWordleRound'] = ThisWordleRound
-            session['AllWordleRounds'] = AllWordleRounds
+            session['WordleGameParametersDict'] = WordleGameParametersDict
+            session['ThisWordleRoundDict'] = ThisWordleRoundDict
 
             #Redirect to rag score page
-            return redirect("/find_word/no", code=301)
+            return redirect("/find_word/no/yes", code=301)
         
     #-----------------#
     #--- Otherwise ---#
@@ -166,16 +153,33 @@ def wordle_homepage(reset="yes"):  #Default value is "yes" if no value provided
 #--- Page 2: Input RAG scores pages ---#
 #--------------------------------------#
 
-@app.route("/find_word/<remove_trial_word>", methods=["GET", "POST"])
-def wordle_solver(remove_trial_word="no"):
+@app.route("/find_word/<remove_trial_word>/<first_load>", methods=["GET", "POST"])
+def wordle_solver(remove_trial_word="no",first_load="yes"):
+    
+    #--------------------------------------------#
+    #--- Retrieve session objects ---#
+    #--------------------------------------------#
     
     #Retreive session objects
-    WordleGameParameters = session.get('WordleGameParameters', None)
-    ThisWordleRound = session.get('ThisWordleRound', None)
-    AllWordleRounds = session.get('AllWordleRounds', None)
+    WordleGameParametersDict = session.get('WordleGameParametersDict',None)
+    ThisWordleRoundDict = session.get('ThisWordleRoundDict', None)
+
+    #Convert back to objects
+    WordleGameParameters=wordle_game_from_dict(WordleGameParametersDict)
+    ThisWordleRound=wordle_round_from_dict(ThisWordleRoundDict)
     
-    #Ensure relevant variables are global
-    global rank_start_word,bfs_start_word
+    #Retrieve AllWordleRounds session object
+    if first_load=="yes":
+
+        #Store first round
+        AllWordleRounds={}
+        AllWordleRounds["ThisWordleRound1"]=ThisWordleRound
+        
+    else:
+        AllWordleRoundDict = session.get('AllWordleRoundDict',None)
+        AllWordleRounds={}
+        for wordle_round in AllWordleRoundDict.keys():
+            AllWordleRounds[wordle_round]=wordle_round_from_dict(AllWordleRoundDict[wordle_round])
     
     #Initialise variables
     error_message = "" #Initialise error string for printing error if needed
@@ -254,7 +258,7 @@ def wordle_solver(remove_trial_word="no"):
         #---------------------------#
 
         #Save RAG colours into wordle round object
-        global rag_colours
+        rag_colours = session.get('rag_colours',None)
         ThisWordleRound.previous_rag_score=rag_colours
 
         #Get next trial word
@@ -302,6 +306,20 @@ def wordle_solver(remove_trial_word="no"):
     #Ensure rag colours are reset before outputting webpage
     rag_colours=["Red","Red","Red","Red","Red"]
     
+    #Convert objects to dictionary so that they can then be stored as session objects
+    WordleGameParametersDict=wordle_game_to_dict(WordleGameParameters)
+    ThisWordleRoundDict=wordle_round_to_dict(ThisWordleRound)
+    
+    #Convert all objects in AllWordleRounds dictionary to dictionaries
+    AllWordleRoundDict={}
+    for wordle_round in AllWordleRounds.keys():
+        AllWordleRoundDict[wordle_round]=wordle_round_to_dict(AllWordleRounds[wordle_round])
+
+    #Store objects as session objects so they are available on the next page
+    session['WordleGameParametersDict'] = WordleGameParametersDict
+    session['ThisWordleRoundDict'] = ThisWordleRoundDict
+    session['AllWordleRoundDict'] = AllWordleRoundDict
+    
     #Display webpage
     return render_template('rag_input_page.html',
                            error_message=error_message,
@@ -326,13 +344,57 @@ def tile_colour_mapping(colour: str):
 @app.route("/store_colors", methods=["POST"])
 def store_colors():
     data = request.get_json()
-    global rag_colours
     rag_colours=[tile_colour_mapping(data['tile1']),
                  tile_colour_mapping(data['tile2']),
                  tile_colour_mapping(data['tile3']),
                  tile_colour_mapping(data['tile4']),
                  tile_colour_mapping(data['tile5'])]
+    session['rag_colours'] = rag_colours #Save as session object
     return jsonify({"message": "Colors stored successfully!"})
+
+def wordle_round_to_dict(wr):
+    return {
+        'n_previous_guesses': wr.n_previous_guesses,
+        'previous_trial_word': wr.previous_trial_word,
+        'previous_rag_score': wr.previous_rag_score,
+        'n_words_remaining': wr.n_words_remaining,
+        'remaining_words': wr.remaining_words,
+        'remaining_letters': wr.remaining_letters,
+        'round_number': wr.round_number,
+        'trial_word': wr.trial_word,
+        'error': wr.error,
+        'error_message': wr.error_message,
+    }
+
+def wordle_round_from_dict(wr_dict):
+    return WordleRound(
+        n_previous_guesses=wr_dict['n_previous_guesses'],
+        previous_trial_word=wr_dict['previous_trial_word'],
+        previous_rag_score=wr_dict['previous_rag_score'],
+        n_words_remaining=wr_dict['n_words_remaining'],
+        remaining_words=wr_dict['remaining_words'],
+        remaining_letters=wr_dict['remaining_letters'],
+        round_number=wr_dict['round_number'],
+        trial_word=wr_dict['trial_word'],
+        error=wr_dict['error'],
+        error_message=wr_dict['error_message'],
+    )
+
+def wordle_game_to_dict(wg):
+    return {
+        'all_words': wg.all_words,
+        'n_words': wg.n_words,
+        'method': wg.method,
+        'mode': wg.mode,
+    }
+
+def wordle_game_from_dict(wg_dict):
+    return WordleGame(
+        all_words=wg_dict['all_words'],
+        n_words=wg_dict['n_words'],
+        method=wg_dict['method'],
+        mode=wg_dict['mode'],
+    )
 
 if __name__ == '__main__':
   app.run()
