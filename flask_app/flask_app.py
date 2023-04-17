@@ -14,7 +14,8 @@
 
 from flask import Flask, request, render_template, jsonify, redirect, url_for, session
 from flask_session import Session
-
+import os
+from dotenv import load_dotenv
 import copy
 
 from helper_functions.find_word import find_word_flask
@@ -27,9 +28,11 @@ from helper_functions.other_helper_functions.wordle_classes import WordleRound
 #--- Start flask app ---#
 #-----------------------#
 
+load_dotenv()
 app = Flask(__name__)
 app.config["DEBUG"] = True
-app.secret_key = 'your_secret_key_here'
+app.secret_key = os.environ.get("SECRET_KEY")
+#app.secret_key = 'your_secret_key_here'
 app.config['SESSION_TYPE'] = 'filesystem'  # Or use 'redis' if you have Redis set up
 Session(app)
 
@@ -45,7 +48,7 @@ def wordle_homepage(reset="yes"):  #Default value is "yes" if no value provided
     all_words,n_words=oth.import_wordle_word_list()
     
     #If we just starting or ressting...
-    if reset=="yes" or "reset" not in locals():
+    if reset=="yes":
     
         #...just set error message
         error_message=""
