@@ -308,6 +308,7 @@ def wordle_solver(remove_trial_word="no",first_load="yes"):
     
     #Ensure rag colours are reset before outputting webpage
     rag_colours=["Red","Red","Red","Red","Red"]
+    session['rag_colours'] = rag_colours #Save as session object
     
     #Convert objects to dictionary so that they can then be stored as session objects
     WordleGameParametersDict=wordle_game_to_dict(WordleGameParameters)
