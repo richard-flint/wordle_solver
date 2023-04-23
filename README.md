@@ -1,21 +1,27 @@
 # Wordle Solver
 This is a simple web application that helps users solve the New York Times's daily [Wordle puzzle](https://www.nytimes.com/games/wordle/).
 
-**Note: This app is under active development. This includes both the backend algorithms that "solve" the Wordle puzzle, and the frontend user interface. The current version of the app should nonetheless work if installed as instructed below. Current areas of development include:**
-* **Deployment on serverless infrastructure**
-* **Training an RL agent and comparing to existing algorithms**
+The online version of the web application can be found at [solvewordle.com](www.solvewordle.com)
+
+**Note: This app is under active development.** This includes both the backend algorithms that "solve" the Wordle puzzle, and the frontend user interface. The current version of the app is nonetheless available at [solvewordle.com](www.solvewordle.com) and should work if installed as instructed below. 
 
 # Basic overview of web app
-The web app currently allows users to select one of three backend algorithms:
+The web app currently allows users to select one of four backend algorithms:
 * **Random:** This methods generates a random next guess from the list of possible words. This is perhaps the simplest method for solving Wordle.
 * **Rank:** This method finds the frequency of each letter within the list of remaining possible words, and uses this information to rank the remaining possible words. The highest ranked word is the one that's letters appear most frequently in the remaining list of possible words.
-* **Brute Force Simple:** This method finds the word that generates the shortest next list of remaining possible words.
+* **Brute Force Simple:** Finds the average feedback (green, orange, grey) for each remaining possible word, and ranks the remaining possible words based on this average feedback.
+* **ChatGPT:** Uses the ChatGPT API to solve Wordle by describing Wordle in the model's context window. **Note that this method is not currently available in this web app** because of the cost of using the API, but you can try this method yourself by cloning the GitHub repository and running a version of the wordle solver yourself.
+
+This is an example of the page that allows users to select the algorithm, although note that the options may change as the app develops:
 <p align="center">
   <img src=https://user-images.githubusercontent.com/63592862/213870880-ac649656-6206-4340-a69c-c70e4353f661.png width="500" height="325">
 </p>
-The app then generates a trial word. Users can input this word into the New York Times's [Wordle puzzle](https://www.nytimes.com/games/wordle/), which will then provide different colours as feedback for each letter.
 
-Users can then input these colours into the Wordle solver by pressing repeatedly on each letter. This cycles through the available colours: Green, Orange and Grey. 
+The app then generates a trial word.
+
+Users can input this word into the New York Times's [Wordle puzzle](https://www.nytimes.com/games/wordle/), which will then provide different colours as feedback for each letter.
+
+Users can then input these colours into the Wordle Solver by pressing repeatedly on each letter. This cycles through the available colours: Green, Orange and Grey. 
 
 Once the correct colours have been selected, users can generate the next trial word.
 <p align="center">
@@ -28,12 +34,14 @@ This approach is repeated until the puzzle is solved.
 </p>
 
 ## Getting Started
-The Wordle solver is not yet available online. To run the Wordle solver, you need to clone this repository and run the app on a local machine.
+The online version of the web application can be found at [solvewordle.com](www.solvewordle.com)
 
-### Installing and virtual web app locally using a Python virtual environment
+To run the Wordle solver, you need to clone this repository and run the app on a local machine.
+
+### Installing and running web app locally using a Python virtual environment
 * Clone this repository: ```git clone https://github.com/richard-flint/wordle_solver.git```
-* Navigate to "codebase" folder in this repository using the command line: ```cd \wordle_solver\codebase```
-* Activate virtual environment: ```myvenv\Scripts\activate``` (Windows) or ```source venv/bin/activate``` (Linuz/OS)
+* Create a new python virtual environment using the requirements.txt file. Instructions on how to do this can be found [here](https://docs.python.org/3/library/venv.html)
+* Activate virtual environment, usually using ```venv\Scripts\activate``` (Windows) or ```source venv/bin/activate``` (Linuz/OS)
 * Navigate to flask app folder: ```cd flask_app```
 * Run flask app: ```python flask_app.py```
 * View the app: Visit http://localhost:5000 in your browser to view the app
