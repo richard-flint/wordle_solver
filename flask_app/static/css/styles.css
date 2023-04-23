@@ -85,5 +85,32 @@
 		text-align: center;
 		padding: 20px;
 	}
+	
+	.popup {
+		position: absolute;
+		background-color: #f9f9f9;
+		border: 1px solid #ccc;
+		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+		z-index: 100;
+		padding: 20px;
+		width: 300px;
+	  }
+
+	#infoBtn {
+    margin-left: 5px;
+    }
+	
+	.close {
+    position: absolute;
+    top: 5px;
+    right: 10px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+	}
+	
+	.info-text {
+    margin-bottom: 20px; /* Adjust this value to create more or less space */
+	}
 
 </style>

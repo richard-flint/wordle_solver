@@ -23,10 +23,21 @@
 		<p id="definition">
 	</form>
 	<p>{{error_message}}</p>
+	<div class="info-text">Not sure which algorithm to <a href="#" id="infoLink">select</a>?</div>
+	<div id="infoPopup" class="popup">
+		<span id="closeBtn" class="close">&times;</span>
+		<p><strong>Random</strong>: Selects the next word at random from the list of possible remaining words.</p>
+		<p><strong>Rank</strong>: Finds the letters that appear most in the remaining possible words, and uses this information to rank the remaining possible words.</p>
+		<p><strong>Brute Force Simple</strong>: Finds the average feedback (green, orange, grey) for each remaining possible word, and ranks the remaining possible words based on this average feedback.</p>
+		<p><strong>ChatGPT</strong>: Uses the ChatGPT API to solve Wordle by describing Wordle in the model's context window. <b>Note that this method is not currently available in this web app</b> because of the cost of using the API, but you can try this method yourself by cloning the GitHub repository and running a version of the wordle solver yourself.</p>
+		<p><strong>Just give me the best algorithm...</strong>: Automatically selects the best algorithm to solve Wordle. At present, this is "Brute Force Simple".</p>
+	</div>
 	<p>Link to <a href="https://github.com/richard-flint/wordle_solver" target="_blank">GitHub repository</a></p>
 </div>
 
 <script>
+
+	/*
 	document.getElementById('methodinput').addEventListener('change', function() {
 		var method = this.value;
 		if (method === 'brute_force_simple') {
@@ -42,7 +53,32 @@
 		} else if (method === 'best') {
 			document.getElementById('definition').innerHTML = 'The best performing algorithm in this Wordle Solver is currently "Brute Force Simple", which solves wordle in an average of 3 to 4 guesses. You can find out more about the performances of the different algorithms on the GitHub repository.';
 		}
-	});
+	}); */
+	
+  document.addEventListener("DOMContentLoaded", function() {
+    var popup = document.getElementById("infoPopup");
+    popup.style.display = "none"; // Set the initial display property to none
+    
+    document.getElementById("infoLink").addEventListener("click", function(event) {
+      event.preventDefault(); // Prevent the default behavior of the link
+      if (popup.style.display === "none") {
+        var linkRect = this.getBoundingClientRect();
+        var linkTop = linkRect.top + window.scrollY;
+        var linkRight = linkRect.right + window.scrollX;
+        
+        popup.style.top = linkTop + 'px';
+        popup.style.left = linkRight + 'px';
+        popup.style.display = "block";
+      } else {
+        popup.style.display = "none";
+      }
+    });
+
+    // Add an event listener for the close button
+    document.getElementById("closeBtn").addEventListener("click", function() {
+      document.getElementById("infoPopup").style.display = "none";
+    });
+  });
 		
 </script>
 </body>
