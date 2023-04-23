@@ -3,7 +3,7 @@ This is a simple web application that helps users solve the New York Times's dai
 
 The online version of the web application can be found at [solvewordle.com](www.solvewordle.com)
 
-**Note: This app is under active development.** This includes both the backend algorithms that "solve" the Wordle puzzle, and the frontend user interface. The current version of the app is nonetheless available at [solvewordle.com](www.solvewordle.com) and should work if installed as instructed below. 
+**Note: This app is under active development.** This includes both the backend algorithms that "solve" the Wordle puzzle, and the frontend user interface. The current version of the app is nonetheless available at [solvewordle.com](www.solvewordle.com). You can also clone this repo and run (and edit!) the app locally, and there are some instructions for how to do this below. 
 
 # Basic overview of web app
 The web app currently allows users to select one of four backend algorithms:
