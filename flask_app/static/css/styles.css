@@ -129,14 +129,6 @@
         font-size: 1.2em;
     }
 	
-	.popup {
-        position: fixed; /* Change the position to fixed */
-        width: calc(100% - 40px);
-        padding: 20px 10px;
-        left: 50%; /* Center the popup horizontally */
-        top: 50%; /* Center the popup vertically */
-        transform: translate(-50%, -50%); /* Adjust the position to be truly centered */
-    }
 }
 
 
