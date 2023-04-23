@@ -40,7 +40,7 @@ To run the Wordle solver, you need to clone this repository and run the app on a
 
 ### Installing and running web app locally using a Python virtual environment
 * Clone this repository: ```git clone https://github.com/richard-flint/wordle_solver.git```
-* Create a new python virtual environment using the requirements.txt file. Instructions on how to do this can be found [here](https://docs.python.org/3/library/venv.html)
+* Create a new python virtual environment using the requirements.txt file (instructions on how to do this can be found [here])(https://docs.python.org/3/library/venv.html)
 * Activate virtual environment, usually using ```venv\Scripts\activate``` (Windows) or ```source venv/bin/activate``` (Linuz/OS)
 * Navigate to flask app folder: ```cd flask_app```
 * Run flask app: ```python flask_app.py```
