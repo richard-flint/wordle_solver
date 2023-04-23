@@ -87,7 +87,7 @@
 		text-align: center;
 		padding: 20px;
 	}
-	
+	  
 	.popup {
 		position: absolute;
 		background-color: #f9f9f9;
@@ -96,7 +96,8 @@
 		z-index: 100;
 		padding: 20px;
 		width: 300px;
-	  }
+		max-width: calc(100% - 40px);
+	}
 	
 	.close {
     position: absolute;
@@ -129,8 +130,12 @@
     }
 	
 	.popup {
-        width: calc(100% - 40px); /* Set the width to 100% minus the left and right padding */
-        padding: 20px 10px; /* Reduce the left and right padding */
+        position: fixed; /* Change the position to fixed */
+        width: calc(100% - 40px);
+        padding: 20px 10px;
+        left: 50%; /* Center the popup horizontally */
+        top: 50%; /* Center the popup vertically */
+        transform: translate(-50%, -50%); /* Adjust the position to be truly centered */
     }
 }
 
