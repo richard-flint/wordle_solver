@@ -127,6 +127,11 @@
         height: 40px;
         font-size: 1.2em;
     }
+	
+	.popup {
+        width: calc(100% - 40px); /* Set the width to 100% minus the left and right padding */
+        padding: 20px 10px; /* Reduce the left and right padding */
+    }
 }
 
 
