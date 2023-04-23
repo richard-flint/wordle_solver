@@ -32,8 +32,7 @@ load_dotenv()
 app = Flask(__name__)
 app.config["DEBUG"] = True
 app.secret_key = os.environ.get("SECRET_KEY")
-#app.secret_key = 'your_secret_key_here'
-app.config['SESSION_TYPE'] = 'filesystem'  # Or use 'redis' if you have Redis set up
+app.config['SESSION_TYPE'] = 'filesystem'
 Session(app)
 
 #------------------------#
@@ -64,7 +63,7 @@ def wordle_homepage(reset="yes"):  #Default value is "yes" if no value provided
     
         #Initialise variables for checking method
         method = None
-        accepted_methods=["random","rank","brute_force_simple"] #Initialise list for checking input
+        accepted_methods=["random","rank","brute_force_simple","best"] #Initialise list for checking input
         error_message=""
 
         #Get input for method variable
@@ -94,6 +93,10 @@ def wordle_homepage(reset="yes"):  #Default value is "yes" if no value provided
         
         #If method is in accepted list
         elif method in accepted_methods:
+            
+            #Convert "best" to "brute_force_simple" (i.e. the current best performing algorithm)
+            if method == "best":
+                method="brute_force_simple"
             
             #Create instance of WordleGameParameters
             mode="real_flask"

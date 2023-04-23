@@ -15,6 +15,7 @@
 			<option value="rank">Rank</option>
 			<option value="brute_force_simple">Brute Force Simple</option>
 			<option value="chatgpt">ChatGPT</option>
+			<option value="best">Just give me the best algorithm...</option>
 		</select>
 		<div class="form">
 			<input type="submit" class="btn btn-success" value="Get first trial word" /></p>
@@ -38,6 +39,8 @@
 			document.getElementById('definition').innerHTML = 'This method uses the ChatGPT API (specifically, GPT-3.5-Turbo) to solve Wordle. <b>Note that this method is not currently available in this web app</b> because of the cost of using the API, but you can try this method yourself by cloning the GitHub repository.';
 		} else if (method === 'select_algorithm') {
 			document.getElementById('definition').innerHTML = '';
+		} else if (method === 'best') {
+			document.getElementById('definition').innerHTML = 'The best performing algorithm in this Wordle Solver is currently "Brute Force Simple", which solves wordle in an average of 3 to 4 guesses. You can find out more about the performances of the different algorithms on the GitHub repository.';
 		}
 	});
 		
