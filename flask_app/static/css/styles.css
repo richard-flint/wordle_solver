@@ -1,5 +1,7 @@
 <style>
 		
+/* Base styles */
+
 	.container{
 		background-color: #f2f2f2;
 		text-align: center;
@@ -95,10 +97,6 @@
 		padding: 20px;
 		width: 300px;
 	  }
-
-	#infoBtn {
-    margin-left: 5px;
-    }
 	
 	.close {
     position: absolute;
@@ -110,7 +108,26 @@
 	}
 	
 	.info-text {
-    margin-bottom: 20px; /* Adjust this value to create more or less space */
+    margin-bottom: 20px;
 	}
+
+/* Mobile styles */
+@media (max-width: 767px) {
+    h1 {
+        font-size: 2em;
+    }
+
+    input[type="submit"] {
+        font-size: 0.8em;
+        padding: 8px 12px;
+    }
+
+    .letter-tile {
+        width: 40px;
+        height: 40px;
+        font-size: 1.2em;
+    }
+}
+
 
 </style>
